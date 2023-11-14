@@ -244,6 +244,8 @@ func ValidateCustomFields(fields map[string]string, configuredFields []jira.Issu
 		}
 	}
 
+	cmdutil.Warn(strings.Join(invalidCustomFields, ", "))
+
 	if len(invalidCustomFields) > 0 {
 		cmdutil.Warn(`
 Some custom fields are not configured and will be ignored. This will fail with error in the future release.
