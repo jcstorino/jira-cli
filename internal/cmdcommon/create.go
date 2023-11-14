@@ -240,6 +240,7 @@ func ValidateCustomFields(fields map[string]string, configuredFields []jira.Issu
 	invalidCustomFields := make([]string, 0, len(fields))
 	for key := range fields {
 		if _, ok := fieldsMap[key]; !ok {
+			cmdutil.Warn(`O Valor de Key e %s`, key)
 			invalidCustomFields = append(invalidCustomFields, key)
 		}
 	}
