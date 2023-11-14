@@ -233,16 +233,12 @@ func ValidateCustomFields(fields map[string]string, configuredFields []jira.Issu
 	fieldsMap := make(map[string]string)
 	for _, configured := range configuredFields {
 		identifier := strings.ReplaceAll(strings.ToLower(strings.TrimSpace(configured.Name)), " ", "-")
-		//identifier := strings.ToLower(strings.TrimSpace(configured.Name))
 		fieldsMap[identifier] = configured.Name
 	}
 
 	invalidCustomFields := make([]string, 0, len(fields))
 	for key := range fields {
-		var ok = fieldsMap[strings.ToLower(strings.TrimSpace(key))]
-		cmdutil.Warn(`O Valor de Ok e %s`, ok)
 		if _, ok := fieldsMap[strings.ToLower(strings.TrimSpace(key))]; !ok {
-			cmdutil.Warn(`O Valor de Key e %s`, key)
 			invalidCustomFields = append(invalidCustomFields, key)
 		}
 	}
