@@ -232,25 +232,23 @@ func ValidateCustomFields(fields map[string]string, configuredFields []jira.Issu
 
 	fieldsMap := make(map[string]string)
 	for _, configured := range configuredFields {
-		identifier := strings.ReplaceAll(strings.ToLower(strings.TrimSpace(configured.Name)), " ", "-")
+		//identifier := strings.ReplaceAll(strings.ToLower(strings.TrimSpace(configured.Name)), " ", "-")
+		identifier := strings.ToLower(strings.TrimSpace(configured.Name))
 		fieldsMap[identifier] = configured.Name
 	}
 
 	invalidCustomFields := make([]string, 0, len(fields))
 	for key := range fields {
-		cmdutil.Warn(key)
 		if _, ok := fieldsMap[key]; !ok {
 			invalidCustomFields = append(invalidCustomFields, key)
 		}
 	}
 
-	cmdutil.Warn(strings.Join(invalidCustomFields, ", "))
-
 	if len(invalidCustomFields) > 0 {
 		cmdutil.Warn(`
 Some custom fields are not configured and will be ignored. This will fail with error in the future release.
 Please make sure that the passed custom fields are valid and configured accordingly in the config file.
-Invalid custom fields used in the command is : %s`,
+Invalid custom fields used in the command : %s`,
 			strings.Join(invalidCustomFields, ", "),
 		)
 	}
