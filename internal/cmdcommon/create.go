@@ -250,7 +250,7 @@ func ValidateCustomFields(fields map[string]string, configuredFields []jira.Issu
 		cmdutil.Warn(`
 Some custom fields are not configured and will be ignored. This will fail with error in the future release.
 Please make sure that the passed custom fields are valid and configured accordingly in the config file.
-Invalid custom fields used in the command: %s`,
+Invalid custom fields used in the command is : %s`,
 			strings.Join(invalidCustomFields, ", "),
 		)
 	}
