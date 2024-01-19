@@ -173,6 +173,7 @@ func GetIssueTypeKey(issueType string, issueTypes []*jira.IssueType) string {
 		// Exact matches return immediately.
 		if strings.EqualFold(issueType, it.Name) {
 			issue_id = it.ID
+			break
 		}
 	}
 	return issue_id
