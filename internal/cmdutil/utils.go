@@ -165,6 +165,19 @@ func NormalizeJiraError(msg string) string {
 	return msg
 }
 
+// Get Issue Type Key to send together IssueType
+// Fixes the problem of having 2 Issue Tasks with the same name in Jira
+func GetIssueTypeKey(issueType string, issueTypes []*jira.IssueType) string {
+	var issue_id string
+	for _, it := range issueTypes {
+		// Exact matches return immediately.
+		if strings.EqualFold(issueType, it.Name) {
+			issue_id = it.ID
+		}
+	}
+	return issue_id
+}
+
 // GetSubtaskHandle fetches actual subtask handle.
 // This value can either be handle or name based
 // on the used jira version.

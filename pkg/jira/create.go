@@ -22,6 +22,7 @@ type CreateRequest struct {
 	Project   string
 	Name      string
 	IssueType string
+	IssueKey  string
 	// ParentIssueKey is required when creating a sub-task for classic project.
 	// This can also be used to attach epic for next-gen project.
 	ParentIssueKey string
@@ -126,7 +127,8 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 		}{Key: req.Project},
 		IssueType: struct {
 			Name string `json:"name"`
-		}{Name: req.IssueType},
+			Id   string `json:"id"`
+		}{Name: req.IssueType, Id: req.IssueKey},
 		Name:      req.Name,
 		Summary:   req.Summary,
 		Labels:    req.Labels,
@@ -268,6 +270,7 @@ type createFields struct {
 	} `json:"project"`
 	IssueType struct {
 		Name string `json:"name"`
+		Id   string `json:"id"`
 	} `json:"issuetype"`
 	Parent *struct {
 		Key string `json:"key"`

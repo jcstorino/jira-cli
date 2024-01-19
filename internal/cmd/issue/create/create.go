@@ -83,7 +83,7 @@ func create(cmd *cobra.Command, _ []string) {
 	}
 
 	cmdutil.ExitIfError(cc.setIssueTypes())
-	cmdutil.ExitIfError(cc.askQuestions())
+	//cmdutil.ExitIfError(cc.askQuestions())
 
 	if !params.NoInput {
 		err := cmdcommon.HandleNoInput(params)
@@ -93,6 +93,8 @@ func create(cmd *cobra.Command, _ []string) {
 	params.Reporter = cmdcommon.GetRelevantUser(client, project, params.Reporter)
 	params.Assignee = cmdcommon.GetRelevantUser(client, project, params.Assignee)
 
+	IssueTypeKey := cmdutil.GetIssueTypeKey(params.IssueType, cc.issueTypes)
+
 	key, err := func() (string, error) {
 		s := cmdutil.Info("Creating an issue...")
 		defer s.Stop()
@@ -100,6 +102,7 @@ func create(cmd *cobra.Command, _ []string) {
 		cr := jira.CreateRequest{
 			Project:        project,
 			IssueType:      params.IssueType,
+			IssueKey:       IssueTypeKey,
 			ParentIssueKey: params.ParentIssueKey,
 			Summary:        params.Summary,
 			Body:           params.Body,
