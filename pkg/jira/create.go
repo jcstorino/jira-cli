@@ -129,10 +129,10 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 			Name string `json:"name"`
 			Id   string `json:"id"`
 		}{Name: req.IssueType, Id: req.IssueKey},
-		Name:      req.Name,
-		Summary:   req.Summary,
-		Labels:    req.Labels,
-		epicField: req.EpicField,
+		Name:    req.Name,
+		Summary: req.Summary,
+		Labels:  req.Labels,
+		//epicField: req.EpicField,
 	}
 
 	switch v := req.Body.(type) {
@@ -148,7 +148,9 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 	}
 
 	if req.ParentIssueKey != "" {
+
 		subtaskField := IssueTypeSubTask
+
 		if req.SubtaskField != "" {
 			subtaskField = req.SubtaskField
 		}
