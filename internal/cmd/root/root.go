@@ -7,27 +7,27 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/ankitpokhrel/jira-cli/internal/cmd/board"
-	"github.com/ankitpokhrel/jira-cli/internal/cmd/completion"
-	"github.com/ankitpokhrel/jira-cli/internal/cmd/epic"
-	initCmd "github.com/ankitpokhrel/jira-cli/internal/cmd/init"
-	"github.com/ankitpokhrel/jira-cli/internal/cmd/issue"
-	"github.com/ankitpokhrel/jira-cli/internal/cmd/man"
-	"github.com/ankitpokhrel/jira-cli/internal/cmd/me"
-	"github.com/ankitpokhrel/jira-cli/internal/cmd/open"
-	"github.com/ankitpokhrel/jira-cli/internal/cmd/project"
-	"github.com/ankitpokhrel/jira-cli/internal/cmd/serverinfo"
-	"github.com/ankitpokhrel/jira-cli/internal/cmd/sprint"
-	"github.com/ankitpokhrel/jira-cli/internal/cmd/version"
-	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
-	jiraConfig "github.com/ankitpokhrel/jira-cli/internal/config"
-	"github.com/ankitpokhrel/jira-cli/pkg/netrc"
+	"github.com/jcstorino/jira-cli/internal/cmd/board"
+	"github.com/jcstorino/jira-cli/internal/cmd/completion"
+	"github.com/jcstorino/jira-cli/internal/cmd/epic"
+	initCmd "github.com/jcstorino/jira-cli/internal/cmd/init"
+	"github.com/jcstorino/jira-cli/internal/cmd/issue"
+	"github.com/jcstorino/jira-cli/internal/cmd/man"
+	"github.com/jcstorino/jira-cli/internal/cmd/me"
+	"github.com/jcstorino/jira-cli/internal/cmd/open"
+	"github.com/jcstorino/jira-cli/internal/cmd/project"
+	"github.com/jcstorino/jira-cli/internal/cmd/serverinfo"
+	"github.com/jcstorino/jira-cli/internal/cmd/sprint"
+	"github.com/jcstorino/jira-cli/internal/cmd/version"
+	"github.com/jcstorino/jira-cli/internal/cmdutil"
+	jiraConfig "github.com/jcstorino/jira-cli/internal/config"
+	"github.com/jcstorino/jira-cli/pkg/netrc"
 
 	"github.com/zalando/go-keyring"
 )
 
 const (
-	jiraCLIHelpLink  = "https://github.com/ankitpokhrel/jira-cli#getting-started"
+	jiraCLIHelpLink  = "https://github.com/jcstorino/jira-cli#getting-started"
 	jiraAPITokenLink = "https://id.atlassian.com/manage-profile/security/api-tokens"
 )
 

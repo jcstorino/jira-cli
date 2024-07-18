@@ -1,19 +1,19 @@
 <div align="center">
     <a href="#">
-        <img alt="stargazers over time" src="https://stars.medv.io/ankitpokhrel/jira-cli.svg" />
+        <img alt="stargazers over time" src="https://stars.medv.io/jcstorino/jira-cli.svg" />
     </a>
     <h1 align="center">JiraCLI</h1>
 </div>
 
 <div>
     <p align="center">
-        <a href="https://github.com/ankitpokhrel/jira-cli/actions?query=workflow%3Abuild+branch%3Amaster">
-            <img alt="Build" src="https://img.shields.io/github/actions/workflow/status/ankitpokhrel/jira-cli/ci.yml?branch=main&style=flat-square" />
+        <a href="https://github.com/jcstorino/jira-cli/actions?query=workflow%3Abuild+branch%3Amaster">
+            <img alt="Build" src="https://img.shields.io/github/actions/workflow/status/jcstorino/jira-cli/ci.yml?branch=main&style=flat-square" />
         </a>
-        <a href="https://goreportcard.com/report/github.com/ankitpokhrel/jira-cli">
-            <img alt="GO Report-card" src="https://goreportcard.com/badge/github.com/ankitpokhrel/jira-cli?style=flat-square" />
+        <a href="https://goreportcard.com/report/github.com/jcstorino/jira-cli">
+            <img alt="GO Report-card" src="https://goreportcard.com/badge/github.com/jcstorino/jira-cli?style=flat-square" />
         </a>
-        <a href="https://github.com/ankitpokhrel/jira-cli/blob/master/LICENSE">
+        <a href="https://github.com/jcstorino/jira-cli/blob/master/LICENSE">
             <img alt="Software License" src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square" />
         </a>
         <a href="https://opencollective.com/jira-cli#backers">
@@ -53,15 +53,15 @@ nature of the data. Yet, we've attempted to make the experience as similar as po
 | **Jira**  | <a href="#"><img alt="Jira Cloud" src="https://img.shields.io/badge/Jira Cloud-%E2%9C%93-dark--green?logo=jira&style=flat-square" /></a><a href="#"><img alt="Jira Server" src="https://img.shields.io/badge/Jira Server-%E2%9C%93-dark--green?logo=jira&style=flat-square" /></a> |
 
 ## Installation
-`jira-cli` is available as a downloadable packaged binary for Linux, macOS, and Windows from the [releases page](https://github.com/ankitpokhrel/jira-cli/releases).
+`jira-cli` is available as a downloadable packaged binary for Linux, macOS, and Windows from the [releases page](https://github.com/jcstorino/jira-cli/releases).
 
 You can use Docker to quickly try out `jira-cli`.
 
 ```sh
-docker run -it --rm ghcr.io/ankitpokhrel/jira-cli:latest
+docker run -it --rm ghcr.io/jcstorino/jira-cli:latest
 ```
 
-Follow the [installation guide](https://github.com/ankitpokhrel/jira-cli/wiki/Installation) for other installation methods like `Homebrew`, `Nix`, etc.
+Follow the [installation guide](https://github.com/jcstorino/jira-cli/wiki/Installation) for other installation methods like `Homebrew`, `Nix`, etc.
 
 ## Getting started
 
@@ -70,7 +70,7 @@ Follow the [installation guide](https://github.com/ankitpokhrel/jira-cli/wiki/In
 1. [Get a Jira API token](https://id.atlassian.com/manage-profile/security/api-tokens) and export it to your shell as
    a `JIRA_API_TOKEN` variable. Add it to your shell configuration file, for instance, `$HOME/.bashrc`, so that the
    variable is always available. Alternatively, you can also use `.netrc` file or `keychain` to set the token. Learn
-   more [here](https://github.com/ankitpokhrel/jira-cli/discussions/356).
+   more [here](https://github.com/jcstorino/jira-cli/discussions/356).
 2. Run `jira init`, select installation type as `Cloud`, and provide required details to generate a config file required
    for the tool.
 
@@ -82,7 +82,7 @@ Follow the [installation guide](https://github.com/ankitpokhrel/jira-cli/wiki/In
      a `JIRA_API_TOKEN` variable. In addition to this, set `JIRA_AUTH_TYPE` env to `bearer`.
    - Add these ENVs to your shell configuration file, for instance, `$HOME/.bashrc`, so that they are always available.
    - Alternatively, you can also use `.netrc` file or `keychain` to set the token. Learn
-     more [here](https://github.com/ankitpokhrel/jira-cli/discussions/356).
+     more [here](https://github.com/jcstorino/jira-cli/discussions/356).
 2. Run `jira init`, select installation type as `Local`, and provide the required details to generate a config file required
    for the tool.
 
@@ -91,7 +91,7 @@ Follow the [installation guide](https://github.com/ankitpokhrel/jira-cli/wiki/In
    you will have to fill in `epic.name`, `epic.link` and `issue.types.*.handle` fields manually in the generated config
    to get the expected behavior.
 
-See [FAQs](https://github.com/ankitpokhrel/jira-cli/discussions/categories/faqs) for frequently asked questions.
+See [FAQs](https://github.com/jcstorino/jira-cli/discussions/categories/faqs) for frequently asked questions.
 
 #### Authentication types
 
@@ -126,7 +126,7 @@ The lists are displayed in an interactive UI by default.
 - Press `?` to open the help window.
 
 ### Resources
-- [FAQs](https://github.com/ankitpokhrel/jira-cli/discussions/categories/faqs)
+- [FAQs](https://github.com/jcstorino/jira-cli/discussions/categories/faqs)
 - [Introduction and Motivation](https://medium.com/@ankitpokhrel/introducing-jira-cli-the-missing-command-line-tool-for-atlassian-jira-fe44982cc1de)
 - [Getting Started with JiraCLI](https://www.mslinn.com/blog/2022/08/12/jiracli.html)
 
@@ -281,7 +281,7 @@ $  jira issue create -tStory -s"Epic during creation" -PEPIC-42
 
 ![Create an issue](.github/assets/create.gif)
 
-You can use a `--custom` flag to set custom fields while creating the issue. See [this post](https://github.com/ankitpokhrel/jira-cli/discussions/346) for more details.
+You can use a `--custom` flag to set custom fields while creating the issue. See [this post](https://github.com/jcstorino/jira-cli/discussions/346) for more details.
 
 The command supports both [Github-flavored](https://github.github.com/gfm/)
 and [Jira-flavored](https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all) markdown for writing
@@ -375,7 +375,7 @@ To transition the selected issue from the TUI, press `m`.
 The `view` command lets you see issue details in a terminal. Atlassian document is roughly converted to a markdown
 and is nicely displayed in the terminal.
 
-The command uses `less` as a pager by default. To set your own pager, see https://github.com/ankitpokhrel/jira-cli/discussions/569.
+The command uses `less` as a pager by default. To set your own pager, see https://github.com/jcstorino/jira-cli/discussions/569.
 
 ```sh
 $ jira issue view ISSUE-1
@@ -728,13 +728,13 @@ Sprint 1:   3
 
 ## Feature requests
 
-Please [open a discussion](https://github.com/ankitpokhrel/jira-cli/discussions/categories/ideas) in `ideas` category for the proposed feature.
+Please [open a discussion](https://github.com/jcstorino/jira-cli/discussions/categories/ideas) in `ideas` category for the proposed feature.
 
 ##### How these requests are usually prioritized?
 
 - The feature that is straightforward to implement, doesn't require too much mental power, and can be done even I am lazy will be picked first.
 - If the feature is something that I am missing in my day-to-day work, it might be done first.
-- Rest of the features will be picked based on the [number of votes](https://github.com/ankitpokhrel/jira-cli/discussions/categories/ideas) on the particular feature.
+- Rest of the features will be picked based on the [number of votes](https://github.com/jcstorino/jira-cli/discussions/categories/ideas) on the particular feature.
 
 ## Development
 1. Clone the repo.
@@ -760,17 +760,17 @@ Please [open a discussion](https://github.com/ankitpokhrel/jira-cli/discussions/
 
 ## Support the project
 Your suggestions and feedbacks are highly appreciated. Please feel free
-to [start a discussion](https://github.com/ankitpokhrel/jira-cli/discussions)
-or [create an issue](https://github.com/ankitpokhrel/jira-cli/issues/new) to share your experience with the tool or to
+to [start a discussion](https://github.com/jcstorino/jira-cli/discussions)
+or [create an issue](https://github.com/jcstorino/jira-cli/issues/new) to share your experience with the tool or to
 discuss a feature/issue.
 
 If you think this tool is useful, saves you a lot of work, and lets you sleep much better, then consider supporting the
 project by any of the following means:
 
-- [Star the repo](https://github.com/ankitpokhrel/jira-cli/stargazers).
+- [Star the repo](https://github.com/jcstorino/jira-cli/stargazers).
 - Spread the word by sharing the project on social media or with friends.
-- [Report bugs](https://github.com/ankitpokhrel/jira-cli/issues/new/choose)
-  or [propose solutions](https://github.com/ankitpokhrel/jira-cli/issues).
+- [Report bugs](https://github.com/jcstorino/jira-cli/issues/new/choose)
+  or [propose solutions](https://github.com/jcstorino/jira-cli/issues).
 - [Donate a small amount](https://opencollective.com/jira-cli#backers).
 
 <div>

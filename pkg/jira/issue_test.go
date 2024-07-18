@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/ankitpokhrel/jira-cli/pkg/adf"
+	"github.com/jcstorino/jira-cli/pkg/adf"
 )
 
 func TestGetIssue(t *testing.T) {

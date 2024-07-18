@@ -11,10 +11,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/ankitpokhrel/jira-cli/api"
-	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
-	"github.com/ankitpokhrel/jira-cli/internal/query"
-	"github.com/ankitpokhrel/jira-cli/pkg/jira"
+	"github.com/jcstorino/jira-cli/api"
+	"github.com/jcstorino/jira-cli/internal/cmdutil"
+	"github.com/jcstorino/jira-cli/internal/query"
+	"github.com/jcstorino/jira-cli/pkg/jira"
 )
 
 const (

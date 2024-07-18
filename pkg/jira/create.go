@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ankitpokhrel/jira-cli/pkg/adf"
-	"github.com/ankitpokhrel/jira-cli/pkg/md"
+	"github.com/jcstorino/jira-cli/pkg/adf"
+	"github.com/jcstorino/jira-cli/pkg/md"
 )
 
 // CreateResponse struct holds response from POST /issue endpoint.
@@ -32,6 +32,7 @@ type CreateRequest struct {
 	Assignee       string
 	Priority       string
 	Labels         []string
+	Timetracking   string
 	Components     []string
 	FixVersions    []string
 	// EpicField is the dynamic epic field name
@@ -129,10 +130,12 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 			Name string `json:"name"`
 			Id   string `json:"id"`
 		}{Name: req.IssueType, Id: req.IssueKey},
+		Timetracking: struct {
+			OriginalEstimate string `json:"originalestimate,omitempty"`
+		}{OriginalEstimate: req.Timetracking},
 		Name:    req.Name,
 		Summary: req.Summary,
 		Labels:  req.Labels,
-		//epicField: req.EpicField,
 	}
 
 	switch v := req.Body.(type) {
@@ -163,6 +166,7 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 			data.Fields.M.Name = req.ParentIssueKey
 		}
 	}
+
 	if req.Reporter != "" {
 		if req.installationType == InstallationTypeLocal {
 			data.Fields.M.Reporter = &nameOrAccountID{Name: &req.Reporter}
@@ -170,6 +174,7 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 			data.Fields.M.Reporter = &nameOrAccountID{AccountID: &req.Reporter}
 		}
 	}
+
 	if req.Assignee != "" {
 		if req.installationType == InstallationTypeLocal {
 			data.Fields.M.Assignee = &nameOrAccountID{Name: &req.Assignee}
@@ -177,11 +182,19 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 			data.Fields.M.Assignee = &nameOrAccountID{AccountID: &req.Assignee}
 		}
 	}
+
+	if req.Timetracking != "" {
+		data.Fields.M.Timetracking = struct {
+			OriginalEstimate string `json:"originalestimate,omitempty"`
+		}{OriginalEstimate: req.Timetracking}
+	}
+
 	if req.Priority != "" {
 		data.Fields.M.Priority = &struct {
 			Name string `json:"name,omitempty"`
 		}{Name: req.Priority}
 	}
+
 	if len(req.Components) > 0 {
 		comps := make([]struct {
 			Name string `json:"name,omitempty"`
@@ -194,6 +207,7 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 		}
 		data.Fields.M.Components = comps
 	}
+
 	if len(req.FixVersions) > 0 {
 		versions := make([]struct {
 			Name string `json:"name,omitempty"`
@@ -285,14 +299,16 @@ type createFields struct {
 	Priority    *struct {
 		Name string `json:"name,omitempty"`
 	} `json:"priority,omitempty"`
-	Labels     []string `json:"labels,omitempty"`
+	Labels       []string `json:"labels,omitempty"`
+	Timetracking struct {
+		OriginalEstimate string `json:"originalestimate,omitempty"`
+	} `json:"timetracking,omitempty"`
 	Components []struct {
 		Name string `json:"name,omitempty"`
 	} `json:"components,omitempty"`
 	FixVersions []struct {
 		Name string `json:"name,omitempty"`
 	} `json:"fixVersions,omitempty"`
-
 	epicField    string
 	customFields customField
 }

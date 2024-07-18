@@ -107,6 +107,12 @@ type IssueFields struct {
 		InwardIssue  *Issue `json:"inwardIssue,omitempty"`
 		OutwardIssue *Issue `json:"outwardIssue,omitempty"`
 	} `json:"issueLinks"`
+	Estimate struct {
+		Timetracking struct {
+			OriginalEstimate  string `json:"originalEstimate,omitempty"`
+			RemainingEstimate string `json:"remainingEstimate,omitempty"`
+		} `json:"timetracking"`
+	}
 	Created string `json:"created"`
 	Updated string `json:"updated"`
 }
@@ -121,6 +127,11 @@ type Field struct {
 		Items    string `json:"items,omitempty"`
 		FieldID  int    `json:"customId,omitempty"`
 	} `json:"schema"`
+}
+
+// Estimate
+type Timetracking struct {
+	OriginalEstimate string `json:"originalestimate,omitempty"`
 }
 
 // IssueTypeField holds issue field info.

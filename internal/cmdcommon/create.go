@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/ankitpokhrel/jira-cli/api"
-	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
-	"github.com/ankitpokhrel/jira-cli/pkg/jira"
+	"github.com/jcstorino/jira-cli/api"
+	"github.com/jcstorino/jira-cli/internal/cmdutil"
+	"github.com/jcstorino/jira-cli/pkg/jira"
 )
 
 const (
@@ -32,6 +32,7 @@ type CreateParams struct {
 	Reporter       string
 	Assignee       string
 	Labels         []string
+	Estimate       string
 	Components     []string
 	FixVersions    []string
 	CustomFields   map[string]string

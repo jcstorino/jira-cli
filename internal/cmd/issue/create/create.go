@@ -7,12 +7,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/ankitpokhrel/jira-cli/api"
-	"github.com/ankitpokhrel/jira-cli/internal/cmdcommon"
-	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
-	"github.com/ankitpokhrel/jira-cli/internal/query"
-	"github.com/ankitpokhrel/jira-cli/pkg/jira"
-	"github.com/ankitpokhrel/jira-cli/pkg/surveyext"
+	"github.com/jcstorino/jira-cli/api"
+	"github.com/jcstorino/jira-cli/internal/cmdcommon"
+	"github.com/jcstorino/jira-cli/internal/cmdutil"
+	"github.com/jcstorino/jira-cli/internal/query"
+	"github.com/jcstorino/jira-cli/pkg/jira"
+	"github.com/jcstorino/jira-cli/pkg/surveyext"
 )
 
 const (
@@ -26,7 +26,7 @@ $ jira issue create -tBug -s"New Bug" -yHigh -lbug -lurgent -b"Bug description"
 $ jira issue create -pPRJ -tBug -yHigh -s"New Bug" -b$'Bug description\n\nSome more text'
 
 # Create issue and set custom fields
-# See https://github.com/ankitpokhrel/jira-cli/discussions/346
+# See https://github.com/jcstorino/jira-cli/discussions/346
 $ jira issue create -tStory -s"Issue with custom fields" --custom story-points=3
 
 # Load description from template file
@@ -110,6 +110,7 @@ func create(cmd *cobra.Command, _ []string) {
 			Assignee:       params.Assignee,
 			Priority:       params.Priority,
 			Labels:         params.Labels,
+			Timetracking:   params.Estimate,
 			Components:     params.Components,
 			FixVersions:    params.FixVersions,
 			CustomFields:   params.CustomFields,
@@ -337,6 +338,9 @@ func parseFlags(flags query.FlagParser) *cmdcommon.CreateParams {
 	cmdutil.ExitIfError(err)
 
 	labels, err := flags.GetStringArray("label")
+	cmdutil.ExitIfError(err)
+
+	estimate, err := flags.GetStringArray("estimate")
 	cmdutil.ExitIfError(err)
 
 	components, err := flags.GetStringArray("component")
