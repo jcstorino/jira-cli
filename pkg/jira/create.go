@@ -131,7 +131,7 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 			Id   string `json:"id"`
 		}{Name: req.IssueType, Id: req.IssueKey},
 		Timetracking: struct {
-			OriginalEstimate string `json:"originalestimate,omitempty"`
+			OriginalEstimate string `json:"originalEstimate,omitempty"`
 		}{OriginalEstimate: req.Timetracking},
 		Name:    req.Name,
 		Summary: req.Summary,
@@ -185,7 +185,7 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 
 	if req.Timetracking != "" {
 		data.Fields.M.Timetracking = struct {
-			OriginalEstimate string `json:"originalestimate,omitempty"`
+			OriginalEstimate string `json:"originalEstimate,omitempty"`
 		}{OriginalEstimate: req.Timetracking}
 	}
 
@@ -301,7 +301,7 @@ type createFields struct {
 	} `json:"priority,omitempty"`
 	Labels       []string `json:"labels,omitempty"`
 	Timetracking struct {
-		OriginalEstimate string `json:"originalestimate,omitempty"`
+		OriginalEstimate string `json:"originalEstimate,omitempty"`
 	} `json:"timetracking,omitempty"`
 	Components []struct {
 		Name string `json:"name,omitempty"`

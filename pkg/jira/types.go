@@ -131,7 +131,7 @@ type Field struct {
 
 // Estimate
 type Timetracking struct {
-	OriginalEstimate string `json:"originalestimate,omitempty"`
+	OriginalEstimate string `json:"originalEstimate,omitempty"`
 }
 
 // IssueTypeField holds issue field info.

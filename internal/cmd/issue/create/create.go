@@ -340,7 +340,7 @@ func parseFlags(flags query.FlagParser) *cmdcommon.CreateParams {
 	labels, err := flags.GetStringArray("label")
 	cmdutil.ExitIfError(err)
 
-	estimate, err := flags.GetStringArray("estimate")
+	estimate, err := flags.GetString("estimate")
 	cmdutil.ExitIfError(err)
 
 	components, err := flags.GetStringArray("component")
@@ -369,6 +369,7 @@ func parseFlags(flags query.FlagParser) *cmdcommon.CreateParams {
 		Priority:       priority,
 		Assignee:       assignee,
 		Labels:         labels,
+		Estimate:       estimate,
 		Reporter:       reporter,
 		Components:     components,
 		FixVersions:    fixVersions,

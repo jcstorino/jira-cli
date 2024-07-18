@@ -115,6 +115,8 @@ func edit(cmd *cobra.Command, args []string) {
 	labels := params.labels
 	labels = append(labels, issue.Fields.Labels...)
 
+	estimate := params.estimate
+
 	components := make([]string, 0, len(issue.Fields.Components)+len(params.components))
 	for _, c := range issue.Fields.Components {
 		components = append(components, c.Name)
@@ -147,6 +149,7 @@ func edit(cmd *cobra.Command, args []string) {
 			Body:           body,
 			Priority:       params.priority,
 			Labels:         labels,
+			Estimate:       estimate,
 			Components:     components,
 			FixVersions:    fixVersions,
 			CustomFields:   params.customFields,
@@ -295,6 +298,7 @@ type editParams struct {
 	priority     string
 	assignee     string
 	labels       []string
+	estimate     string
 	components   []string
 	fixVersions  []string
 	customFields map[string]string
@@ -316,6 +320,9 @@ func parseArgsAndFlags(flags query.FlagParser, args []string, project string) *e
 	cmdutil.ExitIfError(err)
 
 	labels, err := flags.GetStringArray("label")
+	cmdutil.ExitIfError(err)
+
+	estimate, err := flags.GetString("estimate")
 	cmdutil.ExitIfError(err)
 
 	components, err := flags.GetStringArray("component")
@@ -340,6 +347,7 @@ func parseArgsAndFlags(flags query.FlagParser, args []string, project string) *e
 		priority:     priority,
 		assignee:     assignee,
 		labels:       labels,
+		estimate:     estimate,
 		components:   components,
 		fixVersions:  fixVersions,
 		customFields: custom,
@@ -380,6 +388,15 @@ func getMetadataQuestions(meta []string, issue *jira.Issue) []*survey.Question {
 					Default: strings.Join(issue.Fields.Labels, ","),
 				},
 			})
+		case "Estimate":
+			qs = append(qs, &survey.Question{
+				Name: "estimate",
+				Prompt: &survey.Input{
+					Message: "Estimate",
+					Help:    "Estimate in hours",
+					Default: issue.Fields.Estimate.Timetracking.OriginalEstimate,
+				},
+			})
 		case "FixVersions":
 			qs = append(qs, &survey.Question{
 				Name: "fixversions",
@@ -405,6 +422,7 @@ func setFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP("priority", "y", "", "Edit priority")
 	cmd.Flags().StringP("assignee", "a", "", "Edit assignee (email or display name)")
 	cmd.Flags().StringArrayP("label", "l", []string{}, "Append labels")
+	cmd.Flags().StringP("estimate", "e", "", "Estimate in hours")
 	cmd.Flags().StringArrayP("component", "C", []string{}, "Replace components")
 	cmd.Flags().StringArray("fix-version", []string{}, "Add/Append release info (fixVersions)")
 	cmd.Flags().StringToString("custom", custom, "Edit custom fields")
