@@ -274,13 +274,13 @@ func (cc *createCmd) getRemainingQuestions() []*survey.Question {
 
 	var defaultBody string
 
-	if cc.params.Template != "" || cmdutil.StdinHasData() {
-		b, err := cmdutil.ReadFile(cc.params.Template)
-		if err != nil {
-			cmdutil.Failed("Error: %s", err)
-		}
-		defaultBody = string(b)
-	}
+	//if cc.params.Template != "" || cmdutil.StdinHasData() {
+	//	b, err := cmdutil.ReadFile(cc.params.Template)
+	//	if err != nil {
+	//		cmdutil.Failed("Error: %s", err)
+	//	}
+	//	defaultBody = string(b)
+	//}
 
 	if cc.params.NoInput {
 		if cc.params.Body == "" {
