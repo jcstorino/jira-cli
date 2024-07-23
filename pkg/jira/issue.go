@@ -269,21 +269,123 @@ func (c *Client) GetLinkID(inwardIssue, outwardIssue string) (string, error) {
 }
 
 type issueCommentRequest struct {
-	Body string `json:"body"`
+	Body struct {
+		Version int    `json:"version,omitempty"`
+		Type    string `json:"type,omitempty"`
+		Content []struct {
+			Type    string `json:"type,omitempty"`
+			Content []struct {
+				Type  string `json:"type,omitempty"`
+				Attrs *attrs `json:"attrs,omitempty"`
+				Text  string `json:"text,omitempty"`
+			} `json:"content,omitempty"`
+		} `json:"content,omitempty"`
+	} `json:"body"`
+}
+
+type attrs struct {
+	Id string `json:"id,omitempty"`
+}
+
+func getRequestComments(comment string, mention []string) *issueCommentRequest {
+
+	// Adiciona as Tags para menção dos usuários do Jira
+	zmp := make([]struct {
+		Type  string `json:"type,omitempty"`
+		Attrs *attrs `json:"attrs,omitempty"`
+		Text  string `json:"text,omitempty"`
+	}, 0, len(mention))
+
+	for _, c := range mention {
+		zmp = append(zmp, struct {
+			Type  string `json:"type,omitempty"`
+			Attrs *attrs `json:"attrs,omitempty"`
+			Text  string `json:"text,omitempty"`
+		}{
+			Type: "mention",
+			Attrs: &attrs{
+				Id: c,
+			},
+		},
+		)
+	}
+
+	// Adiciona uma quebra de linha para escrever o texto do comentário
+	if len(mention) > 0 {
+		zmp = append(zmp, struct {
+			Type  string `json:"type,omitempty"`
+			Attrs *attrs `json:"attrs,omitempty"`
+			Text  string `json:"text,omitempty"`
+		}{
+			Type: "text",
+			Text: " \n",
+		},
+		)
+	}
+
+	// Escreve o texto do comentário.
+	zmp = append(zmp, struct {
+		Type  string `json:"type,omitempty"`
+		Attrs *attrs `json:"attrs,omitempty"`
+		Text  string `json:"text,omitempty"`
+	}{
+		Type: "text",
+		Text: comment,
+	},
+	)
+
+	data := issueCommentRequest{
+		Body: struct {
+			Version int    `json:"version,omitempty"`
+			Type    string `json:"type,omitempty"`
+			Content []struct {
+				Type    string `json:"type,omitempty"`
+				Content []struct {
+					Type  string `json:"type,omitempty"`
+					Attrs *attrs `json:"attrs,omitempty"`
+					Text  string `json:"text,omitempty"`
+				} `json:"content,omitempty"`
+			} `json:"content,omitempty"`
+		}{
+			Version: 1,
+			Type:    "doc",
+			Content: []struct {
+				Type    string `json:"type,omitempty"`
+				Content []struct {
+					Type  string `json:"type,omitempty"`
+					Attrs *attrs `json:"attrs,omitempty"`
+					Text  string `json:"text,omitempty"`
+				} `json:"content,omitempty"`
+			}{
+				{Type: "paragraph",
+					Content: zmp},
+			},
+		},
+	}
+
+	return &data
+
 }
 
 // AddIssueComment adds comment to an issue using POST /issue/{key}/comment endpoint.
-func (c *Client) AddIssueComment(key, comment string) error {
-	body, err := json.Marshal(&issueCommentRequest{Body: md.ToJiraMD(comment)})
+func (c *Client) AddIssueComment(key, comment string, mention []string) error {
+
+	data := getRequestComments(md.ToJiraMD(comment), mention)
+	body, err := json.Marshal(&data)
+
 	if err != nil {
 		return err
 	}
 
 	path := fmt.Sprintf("/issue/%s/comment", key)
-	res, err := c.PostV2(context.Background(), path, body, Header{
+	res, err := c.Post(context.Background(), path, body, Header{
 		"Accept":       "application/json",
 		"Content-Type": "application/json",
 	})
+	//res, err := c.PostV2(context.Background(), path, body, Header{
+	//	"Accept":       "application/json",
+	//	"Content-Type": "application/json",
+	//})
 	if err != nil {
 		return err
 	}
