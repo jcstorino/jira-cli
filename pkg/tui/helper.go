@@ -13,7 +13,7 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/rivo/tview"
 
-	"github.com/jcstorino/jira-cli/pkg/tui/primitive"
+	"github.com/ankitpokhrel/jira-cli/pkg/tui/primitive"
 )
 
 func pad(in string, n uint) string {

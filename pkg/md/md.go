@@ -1,7 +1,7 @@
 package md
 
 import (
-	"github.com/jcstorino/jira-cli/pkg/md/jirawiki"
+	"github.com/ankitpokhrel/jira-cli/pkg/md/jirawiki"
 	cf "github.com/kentaro-m/blackfriday-confluence"
 	bf "github.com/russross/blackfriday/v2"
 )
