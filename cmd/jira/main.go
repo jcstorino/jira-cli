@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jcstorino/jira-cli/internal/cmd/root"
+	"github.com/ankitpokhrel/jira-cli/internal/cmd/root"
 )
 
 func main() {

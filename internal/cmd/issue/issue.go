@@ -3,19 +3,19 @@ package issue
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/assign"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/clone"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/comment"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/create"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/delete"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/edit"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/link"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/list"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/move"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/unlink"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/view"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/watch"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/worklog"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/clone"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/comment"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/create"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/delete"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/edit"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/link"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/list"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/move"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/unlink"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/view"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/watch"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/worklog"
+	"github.com/ankitpokhrel/jira-cli/internal/cmd/issue/assign"
 )
 
 const helpText = `Issue manage issues in a given project. See available commands below.`

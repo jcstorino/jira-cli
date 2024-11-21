@@ -7,13 +7,13 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/jcstorino/jira-cli/api"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/list"
-	"github.com/jcstorino/jira-cli/internal/cmdutil"
-	"github.com/jcstorino/jira-cli/internal/query"
-	"github.com/jcstorino/jira-cli/internal/view"
-	"github.com/jcstorino/jira-cli/pkg/jira"
-	"github.com/jcstorino/jira-cli/pkg/tui"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/list"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/el/jira-cli/internal/query"
+	"github.com/ankitpokhrel/el/jira-cli/internal/view"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/tui"
+	"github.com/ankitpokhrel/jira-cli/api"
 )
 
 const (

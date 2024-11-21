@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/jcstorino/jira-cli/pkg/jira/filter/issue"
+	"github.com/ankitpokhrel/jira-cli/pkg/jira/filter/issue"
 
-	"github.com/jcstorino/jira-cli/pkg/adf"
-	"github.com/jcstorino/jira-cli/pkg/jira/filter"
-	"github.com/jcstorino/jira-cli/pkg/md"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/adf"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira/filter"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/md"
 )
 
 const (

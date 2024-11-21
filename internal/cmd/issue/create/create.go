@@ -7,12 +7,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/jcstorino/jira-cli/api"
-	"github.com/jcstorino/jira-cli/internal/cmdcommon"
-	"github.com/jcstorino/jira-cli/internal/cmdutil"
-	"github.com/jcstorino/jira-cli/internal/query"
-	"github.com/jcstorino/jira-cli/pkg/jira"
-	"github.com/jcstorino/jira-cli/pkg/surveyext"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdcommon"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/el/jira-cli/internal/query"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/surveyext"
+	"github.com/ankitpokhrel/jira-cli/api"
 )
 
 const (
@@ -26,7 +26,7 @@ $ jira issue create -tBug -s"New Bug" -yHigh -lbug -lurgent -b"Bug description"
 $ jira issue create -pPRJ -tBug -yHigh -s"New Bug" -b$'Bug description\n\nSome more text'
 
 # Create issue and set custom fields
-# See https://github.com/jcstorino/jira-cli/discussions/346
+# See https://github.com/ankitpokhrel/el/jira-cli/discussions/346
 $ jira issue create -tStory -s"Issue with custom fields" --custom story-points=3
 
 # Load description from template file

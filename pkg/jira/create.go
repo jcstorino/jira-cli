@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jcstorino/jira-cli/pkg/adf"
-	"github.com/jcstorino/jira-cli/pkg/md"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/md"
+	"github.com/ankitpokhrel/jira-cli/pkg/adf"
 )
 
 // CreateResponse struct holds response from POST /issue endpoint.

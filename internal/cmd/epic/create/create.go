@@ -5,12 +5,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/jcstorino/jira-cli/api"
-	"github.com/jcstorino/jira-cli/internal/cmdcommon"
-	"github.com/jcstorino/jira-cli/internal/cmdutil"
-	"github.com/jcstorino/jira-cli/internal/query"
-	"github.com/jcstorino/jira-cli/pkg/jira"
-	"github.com/jcstorino/jira-cli/pkg/surveyext"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdcommon"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/el/jira-cli/internal/query"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/surveyext"
+	"github.com/ankitpokhrel/jira-cli/api"
 )
 
 const (
@@ -24,7 +24,7 @@ $ jira epic create -n"Epic epic" -s"Everything" -yHigh -lbug -lurgent -b"Bug des
 $ jira epic create -pPRJ -n"Amazing epic" -yHigh -s"New Bug" -b$'Bug description\n\nSome more text'
 
 # Create epic and set custom fields
-# See https://github.com/jcstorino/jira-cli/discussions/346
+# See https://github.com/ankitpokhrel/el/jira-cli/discussions/346
 $ jira epic create -n"Epic with custom fields" --custom story-points=3`
 )
 

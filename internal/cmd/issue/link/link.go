@@ -9,11 +9,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/jcstorino/jira-cli/api"
-	"github.com/jcstorino/jira-cli/internal/cmd/issue/link/remote"
-	"github.com/jcstorino/jira-cli/internal/cmdutil"
-	"github.com/jcstorino/jira-cli/internal/query"
-	"github.com/jcstorino/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue/link/remote"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/el/jira-cli/internal/query"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/jira-cli/api"
 )
 
 const (

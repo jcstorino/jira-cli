@@ -3,8 +3,8 @@ package sprint
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/jcstorino/jira-cli/internal/cmd/sprint/add"
-	"github.com/jcstorino/jira-cli/internal/cmd/sprint/list"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/sprint/list"
+	"github.com/ankitpokhrel/jira-cli/internal/cmd/sprint/add"
 )
 
 const helpText = `Sprint manage sprints in a project board. See available commands below.`

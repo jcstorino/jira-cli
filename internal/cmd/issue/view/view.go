@@ -4,11 +4,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/jcstorino/jira-cli/api"
-	"github.com/jcstorino/jira-cli/internal/cmdutil"
-	tuiView "github.com/jcstorino/jira-cli/internal/view"
-	"github.com/jcstorino/jira-cli/pkg/jira"
-	"github.com/jcstorino/jira-cli/pkg/jira/filter/issue"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdutil"
+	tuiView "github.com/ankitpokhrel/el/jira-cli/internal/view"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira/filter/issue"
+	"github.com/ankitpokhrel/jira-cli/api"
 )
 
 const (

@@ -14,9 +14,9 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/term"
 
-	"github.com/jcstorino/jira-cli/pkg/browser"
-	"github.com/jcstorino/jira-cli/pkg/jira"
-	"github.com/jcstorino/jira-cli/pkg/tui"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/tui"
+	"github.com/ankitpokhrel/jira-cli/pkg/browser"
 )
 
 // ExitIfError exists with error message if err is not nil.

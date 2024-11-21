@@ -13,9 +13,9 @@ import (
 	"github.com/fatih/color"
 	"github.com/mgutz/ansi"
 
-	"github.com/jcstorino/jira-cli/internal/cmdutil"
-	"github.com/jcstorino/jira-cli/pkg/browser"
-	"github.com/jcstorino/jira-cli/pkg/tui"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/browser"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/tui"
+	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
 )
 
 const (
