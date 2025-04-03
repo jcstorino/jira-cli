@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 
 	"github.com/ankitpokhrel/jira-cli/pkg/jira/filter/issue"
 
@@ -26,15 +28,55 @@ const (
 
 // GetIssue fetches issue details using GET /issue/{key} endpoint.
 func (c *Client) GetIssue(key string, opts ...filter.Filter) (*Issue, error) {
-	return c.getIssue(key, apiVersion3, opts)
+	iss, err := c.getIssue(key, apiVersion3)
+	if err != nil {
+		return nil, err
+	}
+
+	iss.Fields.Description = ifaceToADF(iss.Fields.Description)
+
+	total := iss.Fields.Comment.Total
+	limit := filter.Collection(opts).GetInt(issue.KeyIssueNumComments)
+	if limit > total {
+		limit = total
+	}
+	for i := total - 1; i >= total-limit; i-- {
+		body := iss.Fields.Comment.Comments[i].Body
+		iss.Fields.Comment.Comments[i].Body = ifaceToADF(body)
+	}
+	return iss, nil
 }
 
 // GetIssueV2 fetches issue details using v2 version of Jira GET /issue/{key} endpoint.
-func (c *Client) GetIssueV2(key string, opts ...filter.Filter) (*Issue, error) {
-	return c.getIssue(key, apiVersion2, opts)
+func (c *Client) GetIssueV2(key string, _ ...filter.Filter) (*Issue, error) {
+	return c.getIssue(key, apiVersion2)
 }
 
-func (c *Client) getIssue(key, ver string, opts filter.Collection) (*Issue, error) {
+func (c *Client) getIssue(key, ver string) (*Issue, error) {
+	rawOut, err := c.getIssueRaw(key, ver)
+	if err != nil {
+		return nil, err
+	}
+
+	var iss Issue
+	err = json.Unmarshal([]byte(rawOut), &iss)
+	if err != nil {
+		return nil, err
+	}
+	return &iss, nil
+}
+
+// GetIssueRaw fetches issue details same as GetIssue but returns the raw API response body string.
+func (c *Client) GetIssueRaw(key string) (string, error) {
+	return c.getIssueRaw(key, apiVersion3)
+}
+
+// GetIssueV2Raw fetches issue details same as GetIssueV2 but returns the raw API response body string.
+func (c *Client) GetIssueV2Raw(key string) (string, error) {
+	return c.getIssueRaw(key, apiVersion2)
+}
+
+func (c *Client) getIssueRaw(key, ver string) (string, error) {
 	path := fmt.Sprintf("/issue/%s", key)
 
 	var (
@@ -50,37 +92,23 @@ func (c *Client) getIssue(key, ver string, opts filter.Collection) (*Issue, erro
 	}
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	if res == nil {
-		return nil, ErrEmptyResponse
+		return "", ErrEmptyResponse
 	}
 	defer func() { _ = res.Body.Close() }()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, formatUnexpectedResponse(res)
+		return "", formatUnexpectedResponse(res)
 	}
 
-	var out Issue
-	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
-		return nil, err
+	var b strings.Builder
+	_, err = io.Copy(&b, res.Body)
+	if err != nil {
+		return "", err
 	}
-
-	if ver == apiVersion3 {
-		out.Fields.Description = ifaceToADF(out.Fields.Description)
-
-		total := out.Fields.Comment.Total
-		limit := opts.GetInt(issue.KeyIssueNumComments)
-		if limit > total {
-			limit = total
-		}
-		for i := total - 1; i >= total-limit; i-- {
-			body := out.Fields.Comment.Comments[i].Body
-			out.Fields.Comment.Comments[i].Body = ifaceToADF(body)
-		}
-	}
-
-	return &out, nil
+	return b.String(), nil
 }
 
 // AssignIssue assigns issue to the user using v3 version of the PUT /issue/{key}/assignee endpoint.
@@ -268,111 +296,22 @@ func (c *Client) GetLinkID(inwardIssue, outwardIssue string) (string, error) {
 	return "", fmt.Errorf("no link found between provided issues")
 }
 
+type issueCommentPropertyValue struct {
+	Internal bool `json:"internal"`
+}
+
+type issueCommentProperty struct {
+	Key   string                    `json:"key"`
+	Value issueCommentPropertyValue `json:"value"`
+}
 type issueCommentRequest struct {
-	Body struct {
-		Version int    `json:"version,omitempty"`
-		Type    string `json:"type,omitempty"`
-		Content []struct {
-			Type    string `json:"type,omitempty"`
-			Content []struct {
-				Type  string `json:"type,omitempty"`
-				Attrs *attrs `json:"attrs,omitempty"`
-				Text  string `json:"text,omitempty"`
-			} `json:"content,omitempty"`
-		} `json:"content,omitempty"`
-	} `json:"body"`
-}
-
-type attrs struct {
-	Id string `json:"id,omitempty"`
-}
-
-func getRequestComments(comment string, mention []string) *issueCommentRequest {
-
-	// Adiciona as Tags para menção dos usuários do Jira
-	zmp := make([]struct {
-		Type  string `json:"type,omitempty"`
-		Attrs *attrs `json:"attrs,omitempty"`
-		Text  string `json:"text,omitempty"`
-	}, 0, len(mention))
-
-	for _, c := range mention {
-		zmp = append(zmp, struct {
-			Type  string `json:"type,omitempty"`
-			Attrs *attrs `json:"attrs,omitempty"`
-			Text  string `json:"text,omitempty"`
-		}{
-			Type: "mention",
-			Attrs: &attrs{
-				Id: c,
-			},
-		},
-		)
-	}
-
-	// Adiciona uma quebra de linha para escrever o texto do comentário
-	if len(mention) > 0 {
-		zmp = append(zmp, struct {
-			Type  string `json:"type,omitempty"`
-			Attrs *attrs `json:"attrs,omitempty"`
-			Text  string `json:"text,omitempty"`
-		}{
-			Type: "text",
-			Text: " \n",
-		},
-		)
-	}
-
-	// Escreve o texto do comentário.
-	zmp = append(zmp, struct {
-		Type  string `json:"type,omitempty"`
-		Attrs *attrs `json:"attrs,omitempty"`
-		Text  string `json:"text,omitempty"`
-	}{
-		Type: "text",
-		Text: comment,
-	},
-	)
-
-	data := issueCommentRequest{
-		Body: struct {
-			Version int    `json:"version,omitempty"`
-			Type    string `json:"type,omitempty"`
-			Content []struct {
-				Type    string `json:"type,omitempty"`
-				Content []struct {
-					Type  string `json:"type,omitempty"`
-					Attrs *attrs `json:"attrs,omitempty"`
-					Text  string `json:"text,omitempty"`
-				} `json:"content,omitempty"`
-			} `json:"content,omitempty"`
-		}{
-			Version: 1,
-			Type:    "doc",
-			Content: []struct {
-				Type    string `json:"type,omitempty"`
-				Content []struct {
-					Type  string `json:"type,omitempty"`
-					Attrs *attrs `json:"attrs,omitempty"`
-					Text  string `json:"text,omitempty"`
-				} `json:"content,omitempty"`
-			}{
-				{Type: "paragraph",
-					Content: zmp},
-			},
-		},
-	}
-
-	return &data
-
+	Body       string                 `json:"body"`
+	Properties []issueCommentProperty `json:"properties"`
 }
 
 // AddIssueComment adds comment to an issue using POST /issue/{key}/comment endpoint.
-func (c *Client) AddIssueComment(key, comment string, mention []string) error {
-
-	data := getRequestComments(md.ToJiraMD(comment), mention)
-	body, err := json.Marshal(&data)
-
+func (c *Client) AddIssueComment(key, comment string, internal bool) error {
+	body, err := json.Marshal(&issueCommentRequest{Body: md.ToJiraMD(comment), Properties: []issueCommentProperty{{Key: "sd.public.comment", Value: issueCommentPropertyValue{Internal: internal}}}})
 	if err != nil {
 		return err
 	}
@@ -408,7 +347,7 @@ type issueWorklogRequest struct {
 
 // AddIssueWorklog adds worklog to an issue using POST /issue/{key}/worklog endpoint.
 // Leave param `started` empty to use the server's current datetime as start date.
-func (c *Client) AddIssueWorklog(key, started, timeSpent, comment string) error {
+func (c *Client) AddIssueWorklog(key, started, timeSpent, comment, newEstimate string) error {
 	worklogReq := issueWorklogRequest{
 		TimeSpent: timeSpent,
 		Comment:   md.ToJiraMD(comment),
@@ -422,6 +361,9 @@ func (c *Client) AddIssueWorklog(key, started, timeSpent, comment string) error 
 	}
 
 	path := fmt.Sprintf("/issue/%s/worklog", key)
+	if newEstimate != "" {
+		path = fmt.Sprintf("%s?adjustEstimate=new&newEstimate=%s", path, newEstimate)
+	}
 	res, err := c.PostV2(context.Background(), path, body, Header{
 		"Accept":       "application/json",
 		"Content-Type": "application/json",

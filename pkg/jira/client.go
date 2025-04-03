@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httputil"
+	"os"
 	"strings"
 	"time"
 )
@@ -93,14 +96,22 @@ func (e Errors) String() string {
 // Header is a key, value pair for request headers.
 type Header map[string]string
 
+// MTLSConfig is MTLS authtype specific config.
+type MTLSConfig struct {
+	CaCert     string
+	ClientCert string
+	ClientKey  string
+}
+
 // Config is a jira config.
 type Config struct {
-	Server   string
-	Login    string
-	APIToken string
-	AuthType AuthType
-	Insecure *bool
-	Debug    bool
+	Server     string
+	Login      string
+	APIToken   string
+	AuthType   *AuthType
+	Insecure   *bool
+	Debug      bool
+	MTLSConfig MTLSConfig
 }
 
 // Client is a jira client.
@@ -109,7 +120,7 @@ type Client struct {
 	insecure  bool
 	server    string
 	login     string
-	authType  AuthType
+	authType  *AuthType
 	token     string
 	timeout   time.Duration
 	debug     bool
@@ -132,13 +143,39 @@ func NewClient(c Config, opts ...ClientFunc) *Client {
 		opt(&client)
 	}
 
-	client.transport = &http.Transport{
-		Proxy:           http.ProxyFromEnvironment,
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: client.insecure},
+	transport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		TLSClientConfig: &tls.Config{
+			MinVersion:         tls.VersionTLS12,
+			InsecureSkipVerify: client.insecure,
+		},
 		DialContext: (&net.Dialer{
 			Timeout: client.timeout,
 		}).DialContext,
 	}
+
+	if c.AuthType != nil && *c.AuthType == AuthTypeMTLS {
+		// Create a CA certificate pool and add cert.pem to it.
+		caCert, err := os.ReadFile(c.MTLSConfig.CaCert)
+		if err != nil {
+			log.Fatalf("%s, %s", err, c.MTLSConfig.CaCert)
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+
+		// Read the key pair to create the certificate.
+		cert, err := tls.LoadX509KeyPair(c.MTLSConfig.ClientCert, c.MTLSConfig.ClientKey)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Add the MTLS specific configuration.
+		transport.TLSClientConfig.RootCAs = caCertPool
+		transport.TLSClientConfig.Certificates = []tls.Certificate{cert}
+		transport.TLSClientConfig.Renegotiation = tls.RenegotiateFreelyAsClient
+	}
+
+	client.transport = transport
 
 	return &client
 }
@@ -197,6 +234,11 @@ func (c *Client) PutV2(ctx context.Context, path string, body []byte, headers He
 	return c.request(ctx, http.MethodPut, c.server+baseURLv2+path, body, headers)
 }
 
+// PutV1 sends PUT request to v1 version of the jira api.
+func (c *Client) PutV1(ctx context.Context, path string, body []byte, headers Header) (*http.Response, error) {
+	return c.request(ctx, http.MethodPut, c.server+baseURLv1+path, body, headers)
+}
+
 // DeleteV2 sends DELETE request to v2 version of the jira api.
 func (c *Client) DeleteV2(ctx context.Context, path string, headers Header) (*http.Response, error) {
 	return c.request(ctx, http.MethodDelete, c.server+baseURLv2+path, nil, headers)
@@ -224,9 +266,22 @@ func (c *Client) request(ctx context.Context, method, endpoint string, body []by
 		req.Header.Set(k, v)
 	}
 
-	if c.authType == AuthTypeBearer {
+	// Set default auth type to `basic`.
+	if c.authType == nil {
+		basic := AuthTypeBasic
+		c.authType = &basic
+	}
+
+	// When need to compare using `String()` here, it is used to handle cases where the
+	// authentication type might be empty, ensuring it defaults to the appropriate value.
+	switch c.authType.String() {
+	case string(AuthTypeMTLS):
+		if c.token != "" {
+			req.Header.Add("Authorization", "Bearer "+c.token)
+		}
+	case string(AuthTypeBearer):
 		req.Header.Add("Authorization", "Bearer "+c.token)
-	} else {
+	case string(AuthTypeBasic):
 		req.SetBasicAuth(c.login, c.token)
 	}
 

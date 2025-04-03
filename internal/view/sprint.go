@@ -13,6 +13,11 @@ import (
 	"github.com/ankitpokhrel/el/jira-cli/pkg/jira/filter/issue"
 	"github.com/ankitpokhrel/el/jira-cli/pkg/tui"
 	"github.com/ankitpokhrel/jira-cli/api"
+	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/jira-cli/pkg/jira/filter/issue"
+	"github.com/ankitpokhrel/jira-cli/pkg/tui"
+	"github.com/rivo/tview"
 )
 
 // SprintIssueFunc provides issues in the sprint.
@@ -117,13 +122,13 @@ func (sl *SprintList) data() []tui.PreviewData {
 
 		data = append(data, tui.PreviewData{
 			Key: fmt.Sprintf("%d-%d-%s", bid, sid, s.StartDate),
-			Menu: fmt.Sprintf(
-				"➤ #%d %s: ⦗%s - %s⦘",
+			Menu: tview.Escape(fmt.Sprintf(
+				"➤ #%d %s: [%s - %s]",
 				s.ID,
 				prepareTitle(s.Name),
 				cmdutil.FormatDateTimeHuman(s.StartDate, time.RFC3339),
 				cmdutil.FormatDateTimeHuman(s.EndDate, time.RFC3339),
-			),
+			)),
 			Contents: func(key string) interface{} {
 				issues := sl.Issues(bid, sid)
 				return sl.tabularize(issues)
@@ -148,8 +153,8 @@ func (sl *SprintList) tabularize(issues []*jira.Issue) tui.TableData {
 			issue.Fields.Reporter.Name,
 			issue.Fields.Priority.Name,
 			issue.Fields.Resolution.Name,
-			formatDateTime(issue.Fields.Created, jira.RFC3339),
-			formatDateTime(issue.Fields.Updated, jira.RFC3339),
+			formatDateTime(issue.Fields.Created, jira.RFC3339, sl.Display.Timezone),
+			formatDateTime(issue.Fields.Updated, jira.RFC3339, sl.Display.Timezone),
 			strings.Join(issue.Fields.Labels, ","),
 		})
 	}
@@ -213,11 +218,11 @@ func (sl *SprintList) assignColumns(columns []string, sprint *jira.Sprint) []str
 		case fieldName:
 			bucket = append(bucket, sprint.Name)
 		case fieldStartDate:
-			bucket = append(bucket, formatDateTime(sprint.StartDate, time.RFC3339))
+			bucket = append(bucket, formatDateTime(sprint.StartDate, time.RFC3339, sl.Display.Timezone))
 		case fieldEndDate:
-			bucket = append(bucket, formatDateTime(sprint.EndDate, time.RFC3339))
+			bucket = append(bucket, formatDateTime(sprint.EndDate, time.RFC3339, sl.Display.Timezone))
 		case fieldCompleteDate:
-			bucket = append(bucket, formatDateTime(sprint.CompleteDate, time.RFC3339))
+			bucket = append(bucket, formatDateTime(sprint.CompleteDate, time.RFC3339, sl.Display.Timezone))
 		case fieldState:
 			bucket = append(bucket, sprint.Status)
 		}

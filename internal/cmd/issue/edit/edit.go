@@ -130,6 +130,12 @@ func edit(cmd *cobra.Command, args []string) {
 	}
 	fixVersions = append(fixVersions, params.fixVersions...)
 
+	affectsVersions := make([]string, 0, len(issue.Fields.AffectsVersions)+len(params.affectsVersions))
+	for _, fv := range issue.Fields.AffectsVersions {
+		affectsVersions = append(affectsVersions, fv.Name)
+	}
+	affectsVersions = append(affectsVersions, params.affectsVersions...)
+
 	err = func() error {
 		s := cmdutil.Info("Updating an issue...")
 		defer s.Stop()
@@ -139,21 +145,21 @@ func edit(cmd *cobra.Command, args []string) {
 			body = md.ToJiraMD(body)
 		}
 
-		var parent string
-		if issue.Fields.Parent != nil {
+		parent := cmdutil.GetJiraIssueKey(project, params.parentIssueKey)
+		if parent == "" && issue.Fields.Parent != nil {
 			parent = issue.Fields.Parent.Key
 		}
 
 		edr := jira.EditRequest{
-			ParentIssueKey: parent,
-			Summary:        params.summary,
-			Body:           body,
-			Priority:       params.priority,
-			Labels:         labels,
-			Estimate:       estimate,
-			Components:     components,
-			FixVersions:    fixVersions,
-			CustomFields:   params.customFields,
+			ParentIssueKey:  parent,
+			Summary:         params.summary,
+			Body:            body,
+			Priority:        params.priority,
+			Labels:          labels,
+			Components:      components,
+			FixVersions:     fixVersions,
+			AffectsVersions: affectsVersions,
+			CustomFields:    params.customFields,
 		}
 		if configuredCustomFields, err := cmdcommon.GetConfiguredCustomFields(); err == nil {
 			cmdcommon.ValidateCustomFields(edr.CustomFields, configuredCustomFields)
@@ -191,10 +197,11 @@ func getAnswers(params *editParams, issue *jira.Issue) {
 			if len(ans.Metadata) > 0 {
 				qs := getMetadataQuestions(ans.Metadata, issue)
 				ans := struct {
-					Priority    string
-					Labels      string
-					Components  string
-					FixVersions string
+					Priority        string
+					Labels          string
+					Components      string
+					FixVersions     string
+					AffectsVersions string
 				}{}
 				err := survey.Ask(qs, &ans)
 				cmdutil.ExitIfError(err)
@@ -210,6 +217,9 @@ func getAnswers(params *editParams, issue *jira.Issue) {
 				}
 				if len(ans.FixVersions) > 0 {
 					params.fixVersions = strings.Split(ans.FixVersions, ",")
+				}
+				if len(ans.AffectsVersions) > 0 {
+					params.affectsVersions = strings.Split(ans.AffectsVersions, ",")
 				}
 			}
 		}
@@ -293,21 +303,25 @@ func (ec *editCmd) askQuestions(issue *jira.Issue, originalBody string) error {
 }
 
 type editParams struct {
-	issueKey     string
-	summary      string
-	body         string
-	priority     string
-	assignee     string
-	labels       []string
-	estimate     string
-	components   []string
-	fixVersions  []string
-	customFields map[string]string
-	noInput      bool
-	debug        bool
+	issueKey        string
+	parentIssueKey  string
+	summary         string
+	body            string
+	priority        string
+	assignee        string
+	labels          []string
+	components      []string
+	fixVersions     []string
+	affectsVersions []string
+	customFields    map[string]string
+	noInput         bool
+	debug           bool
 }
 
 func parseArgsAndFlags(flags query.FlagParser, args []string, project string) *editParams {
+	parentIssueKey, err := flags.GetString("parent")
+	cmdutil.ExitIfError(err)
+
 	summary, err := flags.GetString("summary")
 	cmdutil.ExitIfError(err)
 
@@ -332,6 +346,9 @@ func parseArgsAndFlags(flags query.FlagParser, args []string, project string) *e
 	fixVersions, err := flags.GetStringArray("fix-version")
 	cmdutil.ExitIfError(err)
 
+	affectsVersions, err := flags.GetStringArray("affects-version")
+	cmdutil.ExitIfError(err)
+
 	custom, err := flags.GetStringToString("custom")
 	cmdutil.ExitIfError(err)
 
@@ -342,18 +359,19 @@ func parseArgsAndFlags(flags query.FlagParser, args []string, project string) *e
 	cmdutil.ExitIfError(err)
 
 	return &editParams{
-		issueKey:     cmdutil.GetJiraIssueKey(project, args[0]),
-		summary:      summary,
-		body:         body,
-		priority:     priority,
-		assignee:     assignee,
-		labels:       labels,
-		estimate:     estimate,
-		components:   components,
-		fixVersions:  fixVersions,
-		customFields: custom,
-		noInput:      noInput,
-		debug:        debug,
+		issueKey:        cmdutil.GetJiraIssueKey(project, args[0]),
+		parentIssueKey:  parentIssueKey,
+		summary:         summary,
+		body:            body,
+		priority:        priority,
+		assignee:        assignee,
+		labels:          labels,
+		components:      components,
+		fixVersions:     fixVersions,
+		affectsVersions: affectsVersions,
+		customFields:    custom,
+		noInput:         noInput,
+		debug:           debug,
 	}
 }
 
@@ -363,6 +381,11 @@ func getMetadataQuestions(meta []string, issue *jira.Issue) []*survey.Question {
 	fixVersions := make([]string, 0, len(issue.Fields.FixVersions))
 	for _, fv := range issue.Fields.FixVersions {
 		fixVersions = append(fixVersions, fv.Name)
+	}
+
+	affectsVersions := make([]string, 0, len(issue.Fields.AffectsVersions))
+	for _, fv := range issue.Fields.AffectsVersions {
+		affectsVersions = append(affectsVersions, fv.Name)
 	}
 
 	for _, m := range meta {
@@ -407,6 +430,15 @@ func getMetadataQuestions(meta []string, issue *jira.Issue) []*survey.Question {
 					Default: strings.Join(fixVersions, ","),
 				},
 			})
+		case "AffectsVersions":
+			qs = append(qs, &survey.Question{
+				Name: "affectsversions",
+				Prompt: &survey.Input{
+					Message: "Affects Versions",
+					Help:    "Comma separated list of affectsVersions. For eg: v1.0-beta,v2.0",
+					Default: strings.Join(affectsVersions, ","),
+				},
+			})
 		}
 	}
 
@@ -418,6 +450,7 @@ func setFlags(cmd *cobra.Command) {
 
 	cmd.Flags().SortFlags = false
 
+	cmd.Flags().StringP("parent", "P", "", `Link to a parent key`)
 	cmd.Flags().StringP("summary", "s", "", "Edit summary or title")
 	cmd.Flags().StringP("body", "b", "", "Edit description")
 	cmd.Flags().StringP("priority", "y", "", "Edit priority")
@@ -426,6 +459,7 @@ func setFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP("estimate", "e", "", "Estimate in hours")
 	cmd.Flags().StringArrayP("component", "C", []string{}, "Replace components")
 	cmd.Flags().StringArray("fix-version", []string{}, "Add/Append release info (fixVersions)")
+	cmd.Flags().StringArray("affects-version", []string{}, "Add/Append release info (affectsVersions)")
 	cmd.Flags().StringToString("custom", custom, "Edit custom fields")
 	cmd.Flags().Bool("web", false, "Open in web browser after successful update")
 	cmd.Flags().Bool("no-input", false, "Disable prompt for non-required fields")

@@ -25,16 +25,17 @@ type CreateRequest struct {
 	IssueKey  string
 	// ParentIssueKey is required when creating a sub-task for classic project.
 	// This can also be used to attach epic for next-gen project.
-	ParentIssueKey string
-	Summary        string
-	Body           interface{} // string in v1/v2 and adf.ADF in v3
-	Reporter       string
-	Assignee       string
-	Priority       string
-	Labels         []string
-	Timetracking   string
-	Components     []string
-	FixVersions    []string
+	ParentIssueKey   string
+	Summary          string
+	Body             interface{} // string in v1/v2 and adf.ADF in v3
+	Reporter         string
+	Assignee         string
+	Priority         string
+	Labels           []string
+	Components       []string
+	FixVersions      []string
+	AffectsVersions  []string
+	OriginalEstimate string
 	// EpicField is the dynamic epic field name
 	// that changes per jira installation.
 	EpicField string
@@ -158,7 +159,7 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 			subtaskField = req.SubtaskField
 		}
 
-		if req.projectType == ProjectTypeNextGen || data.Fields.M.IssueType.Name == subtaskField {
+		if req.projectType == ProjectTypeNextGen || strings.EqualFold(data.Fields.M.IssueType.Name, subtaskField) {
 			data.Fields.M.Parent = &struct {
 				Key string `json:"key"`
 			}{Key: req.ParentIssueKey}
@@ -220,6 +221,24 @@ func (*Client) getRequestData(req *CreateRequest) *createRequest {
 		}
 		data.Fields.M.FixVersions = versions
 	}
+	if len(req.AffectsVersions) > 0 {
+		versions := make([]struct {
+			Name string `json:"name,omitempty"`
+		}, 0, len(req.AffectsVersions))
+
+		for _, v := range req.AffectsVersions {
+			versions = append(versions, struct {
+				Name string `json:"name,omitempty"`
+			}{v})
+		}
+		data.Fields.M.AffectsVersions = versions
+	}
+	if req.OriginalEstimate != "" {
+		data.Fields.M.TimeTracking = &struct {
+			OriginalEstimate string `json:"originalEstimate,omitempty"`
+		}{OriginalEstimate: req.OriginalEstimate}
+	}
+
 	constructCustomFields(req.CustomFields, req.configuredCustomFields, &data)
 
 	return &data
@@ -309,6 +328,12 @@ type createFields struct {
 	FixVersions []struct {
 		Name string `json:"name,omitempty"`
 	} `json:"fixVersions,omitempty"`
+	AffectsVersions []struct {
+		Name string `json:"name,omitempty"`
+	} `json:"versions,omitempty"`
+	TimeTracking *struct {
+		OriginalEstimate string `json:"originalEstimate,omitempty"`
+	} `json:"timetracking,omitempty"`
 	epicField    string
 	customFields customField
 }

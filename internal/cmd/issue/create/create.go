@@ -1,6 +1,7 @@
 package create
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -13,6 +14,12 @@ import (
 	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
 	"github.com/ankitpokhrel/el/jira-cli/pkg/surveyext"
 	"github.com/ankitpokhrel/jira-cli/api"
+	"github.com/ankitpokhrel/jira-cli/internal/cmdcommon"
+	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/jira-cli/internal/query"
+	"github.com/ankitpokhrel/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/jira-cli/pkg/surveyext"
+	"github.com/ankitpokhrel/jira-cli/pkg/tui"
 )
 
 const (
@@ -35,23 +42,32 @@ $ jira issue create --template /path/to/template.tmpl
 # Get description from standard input
 $ jira issue create --template -
 
+# Create issue in the configured project with JSON output
+$ jira issue create --raw
+
 # Or, use pipe to read input directly from standard input
 $ echo "Description from stdin" | jira issue create -s"Summary" -tTask
 
 # For issue description, the flag --body/-b takes precedence over the --template flag
 # The example below will add "Body from flag" as an issue description
 $ jira issue create -tTask -sSummary -b"Body from flag" --template /path/to/template.tpl`
+
+	flagRaw = "raw"
 )
 
 // NewCmdCreate is a create command.
 func NewCmdCreate() *cobra.Command {
-	return &cobra.Command{
+	cmd := cobra.Command{
 		Use:     "create",
 		Short:   "Create an issue in a project",
 		Long:    helpText,
 		Example: examples,
 		Run:     create,
 	}
+
+	cmd.Flags().Bool(flagRaw, false, "Print output in JSON format")
+
+	return &cmd
 }
 
 // SetFlags sets flags supported by create command.
@@ -72,7 +88,7 @@ func create(cmd *cobra.Command, _ []string) {
 		params: params,
 	}
 
-	if cc.isNonInteractive() {
+	if cc.isNonInteractive() || cc.params.NoInput || tui.IsDumbTerminal() {
 		cc.params.NoInput = true
 
 		if cc.isMandatoryParamsMissing() {
@@ -93,28 +109,26 @@ func create(cmd *cobra.Command, _ []string) {
 	params.Reporter = cmdcommon.GetRelevantUser(client, project, params.Reporter)
 	params.Assignee = cmdcommon.GetRelevantUser(client, project, params.Assignee)
 
-	IssueTypeKey := cmdutil.GetIssueTypeKey(params.IssueType, cc.issueTypes)
-
-	key, err := func() (string, error) {
+	issue, err := func() (*jira.CreateResponse, error) {
 		s := cmdutil.Info("Creating an issue...")
 		defer s.Stop()
 
 		cr := jira.CreateRequest{
-			Project:        project,
-			IssueType:      params.IssueType,
-			IssueKey:       IssueTypeKey,
-			ParentIssueKey: params.ParentIssueKey,
-			Summary:        params.Summary,
-			Body:           params.Body,
-			Reporter:       params.Reporter,
-			Assignee:       params.Assignee,
-			Priority:       params.Priority,
-			Labels:         params.Labels,
-			Timetracking:   params.Estimate,
-			Components:     params.Components,
-			FixVersions:    params.FixVersions,
-			CustomFields:   params.CustomFields,
-			EpicField:      viper.GetString("epic.link"),
+			Project:          project,
+			IssueType:        params.IssueType,
+			ParentIssueKey:   params.ParentIssueKey,
+			Summary:          params.Summary,
+			Body:             params.Body,
+			Reporter:         params.Reporter,
+			Assignee:         params.Assignee,
+			Priority:         params.Priority,
+			Labels:           params.Labels,
+			Components:       params.Components,
+			FixVersions:      params.FixVersions,
+			AffectsVersions:  params.AffectsVersions,
+			OriginalEstimate: params.OriginalEstimate,
+			CustomFields:     params.CustomFields,
+			EpicField:        viper.GetString("epic.link"),
 		}
 		cr.ForProjectType(projectType)
 		cr.ForInstallationType(installation)
@@ -127,18 +141,24 @@ func create(cmd *cobra.Command, _ []string) {
 			cr.SubtaskField = handle
 		}
 
-		resp, err := client.CreateV2(&cr)
-		if err != nil {
-			return "", err
-		}
-		return resp.Key, nil
+		return client.CreateV2(&cr)
 	}()
 
 	cmdutil.ExitIfError(err)
-	cmdutil.Success("Issue created\n%s", cmdutil.GenerateServerBrowseURL(server, key))
+
+	jsonFlag, err := cmd.Flags().GetBool(flagRaw)
+	cmdutil.ExitIfError(err)
+	if jsonFlag {
+		jsonData, err := json.Marshal(issue)
+		cmdutil.ExitIfError(err)
+		fmt.Println(string(jsonData))
+		return
+	}
+
+	cmdutil.Success("Issue created\n%s", cmdutil.GenerateServerBrowseURL(server, issue.Key))
 
 	if web, _ := cmd.Flags().GetBool("web"); web {
-		err := cmdutil.Navigate(server, key)
+		err := cmdutil.Navigate(server, issue.Key)
 		cmdutil.ExitIfError(err)
 	}
 }
@@ -349,6 +369,12 @@ func parseFlags(flags query.FlagParser) *cmdcommon.CreateParams {
 	fixVersions, err := flags.GetStringArray("fix-version")
 	cmdutil.ExitIfError(err)
 
+	affectsVersions, err := flags.GetStringArray("affects-version")
+	cmdutil.ExitIfError(err)
+
+	originalEstimate, err := flags.GetString("original-estimate")
+	cmdutil.ExitIfError(err)
+
 	custom, err := flags.GetStringToString("custom")
 	cmdutil.ExitIfError(err)
 
@@ -362,20 +388,21 @@ func parseFlags(flags query.FlagParser) *cmdcommon.CreateParams {
 	cmdutil.ExitIfError(err)
 
 	return &cmdcommon.CreateParams{
-		IssueType:      issueType,
-		ParentIssueKey: parentIssueKey,
-		Summary:        summary,
-		Body:           body,
-		Priority:       priority,
-		Assignee:       assignee,
-		Labels:         labels,
-		Estimate:       estimate,
-		Reporter:       reporter,
-		Components:     components,
-		FixVersions:    fixVersions,
-		CustomFields:   custom,
-		Template:       template,
-		NoInput:        noInput,
-		Debug:          debug,
+		IssueType:        issueType,
+		ParentIssueKey:   parentIssueKey,
+		Summary:          summary,
+		Body:             body,
+		Priority:         priority,
+		Assignee:         assignee,
+		Labels:           labels,
+		Reporter:         reporter,
+		Components:       components,
+		FixVersions:      fixVersions,
+		AffectsVersions:  affectsVersions,
+		OriginalEstimate: originalEstimate,
+		CustomFields:     custom,
+		Template:         template,
+		NoInput:          noInput,
+		Debug:            debug,
 	}
 }

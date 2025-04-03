@@ -11,6 +11,12 @@ import (
 	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
 	"github.com/ankitpokhrel/el/jira-cli/pkg/surveyext"
 	"github.com/ankitpokhrel/jira-cli/api"
+	"github.com/ankitpokhrel/jira-cli/internal/cmdcommon"
+	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/jira-cli/internal/query"
+	"github.com/ankitpokhrel/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/jira-cli/pkg/surveyext"
+	"github.com/ankitpokhrel/jira-cli/pkg/tui"
 )
 
 const (
@@ -57,7 +63,7 @@ func create(cmd *cobra.Command, _ []string) {
 		params: params,
 	}
 
-	if cc.isNonInteractive() {
+	if cc.isNonInteractive() || cc.params.NoInput || tui.IsDumbTerminal() {
 		cc.params.NoInput = true
 
 		if cc.isMandatoryParamsMissing() {
@@ -97,18 +103,19 @@ func create(cmd *cobra.Command, _ []string) {
 		defer s.Stop()
 
 		cr := jira.CreateRequest{
-			Project:      project,
-			IssueType:    jira.IssueTypeEpic,
-			Summary:      params.Summary,
-			Body:         params.Body,
-			Reporter:     params.Reporter,
-			Assignee:     params.Assignee,
-			Priority:     params.Priority,
-			Labels:       params.Labels,
-			Components:   params.Components,
-			FixVersions:  params.FixVersions,
-			CustomFields: params.CustomFields,
-			EpicField:    viper.GetString("epic.name"),
+			Project:         project,
+			IssueType:       jira.IssueTypeEpic,
+			Summary:         params.Summary,
+			Body:            params.Body,
+			Reporter:        params.Reporter,
+			Assignee:        params.Assignee,
+			Priority:        params.Priority,
+			Labels:          params.Labels,
+			Components:      params.Components,
+			FixVersions:     params.FixVersions,
+			AffectsVersions: params.AffectsVersions,
+			CustomFields:    params.CustomFields,
+			EpicField:       viper.GetString("epic.name"),
 		}
 		if projectType != jira.ProjectTypeNextGen {
 			cr.Name = params.Name
@@ -165,7 +172,9 @@ func (cc *createCmd) getQuestions(projectType string) []*survey.Question {
 	//}
 
 	if cc.params.NoInput {
-		cc.params.Body = defaultBody
+		if cc.params.Body == "" {
+			cc.params.Body = defaultBody
+		}
 		return qs
 	}
 
@@ -228,6 +237,9 @@ func parseFlags(flags query.FlagParser) *cmdcommon.CreateParams {
 	fixVersions, err := flags.GetStringArray("fix-version")
 	cmdutil.ExitIfError(err)
 
+	affectsVersions, err := flags.GetStringArray("affects-version")
+	cmdutil.ExitIfError(err)
+
 	custom, err := flags.GetStringToString("custom")
 	cmdutil.ExitIfError(err)
 
@@ -241,18 +253,19 @@ func parseFlags(flags query.FlagParser) *cmdcommon.CreateParams {
 	cmdutil.ExitIfError(err)
 
 	return &cmdcommon.CreateParams{
-		Name:         name,
-		Summary:      summary,
-		Body:         body,
-		Priority:     priority,
-		Reporter:     reporter,
-		Assignee:     assignee,
-		Labels:       labels,
-		Components:   components,
-		FixVersions:  fixVersions,
-		CustomFields: custom,
-		Template:     template,
-		NoInput:      noInput,
-		Debug:        debug,
+		Name:            name,
+		Summary:         summary,
+		Body:            body,
+		Priority:        priority,
+		Reporter:        reporter,
+		Assignee:        assignee,
+		Labels:          labels,
+		Components:      components,
+		FixVersions:     fixVersions,
+		AffectsVersions: affectsVersions,
+		CustomFields:    custom,
+		Template:        template,
+		NoInput:         noInput,
+		Debug:           debug,
 	}
 }

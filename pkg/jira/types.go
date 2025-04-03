@@ -9,6 +9,8 @@ const (
 	AuthTypeBasic AuthType = "basic"
 	// AuthTypeBearer is a bearer auth.
 	AuthTypeBearer AuthType = "bearer"
+	// AuthTypeMTLS is a mTLS auth.
+	AuthTypeMTLS AuthType = "mtls"
 )
 
 // AuthType is a jira authentication type.
@@ -87,6 +89,9 @@ type IssueFields struct {
 	FixVersions []struct {
 		Name string `json:"name"`
 	} `json:"fixVersions"`
+	AffectsVersions []struct {
+		Name string `json:"name"`
+	} `json:"versions"`
 	Comment struct {
 		Comments []struct {
 			ID      string      `json:"id"`

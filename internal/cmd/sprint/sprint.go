@@ -5,6 +5,8 @@ import (
 
 	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/sprint/list"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/sprint/add"
+	"github.com/ankitpokhrel/jira-cli/internal/cmd/sprint/close"
+	"github.com/ankitpokhrel/jira-cli/internal/cmd/sprint/list"
 )
 
 const helpText = `Sprint manage sprints in a project board. See available commands below.`
@@ -22,8 +24,9 @@ func NewCmdSprint() *cobra.Command {
 
 	lc := list.NewCmdList()
 	ac := add.NewCmdAdd()
+	cc := close.NewCmdClose()
 
-	cmd.AddCommand(lc, ac)
+	cmd.AddCommand(lc, ac, cc)
 
 	list.SetFlags(lc)
 
