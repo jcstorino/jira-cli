@@ -7,6 +7,20 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/completion"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/epic"
+	initCmd "github.com/ankitpokhrel/el/jira-cli/internal/cmd/init"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/issue"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/man"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/me"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/open"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/project"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/serverinfo"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/sprint"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/version"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdutil"
+	jiraConfig "github.com/ankitpokhrel/el/jira-cli/internal/config"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/netrc"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/board"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/completion"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/epic"
@@ -28,7 +42,7 @@ import (
 )
 
 const (
-	jiraCLIHelpLink  = "https://github.com/ankitpokhrel/jira-cli#getting-started"
+	jiraCLIHelpLink  = "https://github.com/ankitpokhrel/el/jira-cli#getting-started"
 	jiraAPITokenLink = "https://id.atlassian.com/manage-profile/security/api-tokens"
 )
 

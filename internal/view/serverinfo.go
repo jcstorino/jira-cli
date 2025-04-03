@@ -6,8 +6,8 @@ import (
 	"io"
 	"text/tabwriter"
 
+	"github.com/ankitpokhrel/el/jira-cli/pkg/tui"
 	"github.com/ankitpokhrel/jira-cli/pkg/jira"
-	"github.com/ankitpokhrel/jira-cli/pkg/tui"
 )
 
 // ServerInfoOption is a functional option to wrap serverinfo properties.
@@ -43,7 +43,7 @@ func WithServerInfoWriter(w io.Writer) ServerInfoOption {
 
 // Render renders the serverinfo view.
 func (s ServerInfo) Render() error {
-	fmt.Fprintf(s.writer, `SERVER INFO
+	_, _ = fmt.Fprintf(s.writer, `SERVER INFO
 -----------
 
 Version: 	 %s

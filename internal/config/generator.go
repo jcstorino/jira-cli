@@ -12,9 +12,9 @@ import (
 	"github.com/AlecAivazis/survey/v2/core"
 	"github.com/spf13/viper"
 
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
 	"github.com/ankitpokhrel/jira-cli/api"
-	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
-	"github.com/ankitpokhrel/jira-cli/pkg/jira"
 )
 
 const (
@@ -616,7 +616,7 @@ func (c *JiraCLIConfigGenerator) searchAndAssignBoard(project, keyword string) e
 func (c *JiraCLIConfigGenerator) configureMetadata() error {
 	var err error
 
-	//nolint:gomnd
+	//nolint:mnd
 	isV9Compatible := c.value.version.major >= 9 || (c.value.version.major == 8 && c.value.version.minor > 4)
 	if c.value.installation == jira.InstallationTypeLocal && isV9Compatible {
 		err = c.configureIssueTypesForJiraServerV9()

@@ -7,12 +7,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdcommon"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/el/jira-cli/internal/query"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/surveyext"
 	"github.com/ankitpokhrel/jira-cli/api"
-	"github.com/ankitpokhrel/jira-cli/internal/cmdcommon"
-	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
-	"github.com/ankitpokhrel/jira-cli/internal/query"
-	"github.com/ankitpokhrel/jira-cli/pkg/jira"
-	"github.com/ankitpokhrel/jira-cli/pkg/surveyext"
 )
 
 const (
@@ -54,13 +54,16 @@ func NewCmdCommentAdd() *cobra.Command {
 	}
 
 	cmd.Flags().Bool("web", false, "Open issue in web browser after adding comment")
+	cmd.Flags().StringSliceP("mention", "m", []string{}, "Add @mention, inform Jira's name or e-mail eg: \"User1,User@domain.com\"")
 	cmd.Flags().StringP("template", "T", "", "Path to a file to read comment body from")
 	cmd.Flags().Bool("no-input", false, "Disable prompt for non-required fields")
+	cmd.Flags().Bool("internal", false, "Make comment internal")
 
 	return &cmd
 }
 
 func add(cmd *cobra.Command, args []string) {
+	project := viper.GetString("project.key")
 	params := parseArgsAndFlags(args, cmd.Flags())
 	client := api.DefaultClient(params.debug)
 	ac := addCmd{
@@ -88,6 +91,16 @@ func add(cmd *cobra.Command, args []string) {
 		params.body = ans.Body
 	}
 
+	nusers := len(params.mention)
+	if nusers > 0 {
+		users := params.mention[0:]
+		mention := make([]string, 0, len(users))
+		for _, iss := range users {
+			mention = append(mention, cmdcommon.GetRelevantUser(client, project, iss))
+		}
+		ac.params.mention = mention
+	}
+
 	if !params.noInput {
 		answer := struct{ Action string }{}
 		err := survey.Ask([]*survey.Question{getNextAction()}, &answer)
@@ -102,7 +115,7 @@ func add(cmd *cobra.Command, args []string) {
 		s := cmdutil.Info("Adding comment")
 		defer s.Stop()
 
-		return client.AddIssueComment(ac.params.issueKey, ac.params.body)
+		return client.AddIssueComment(ac.params.issueKey, ac.params.body, ac.params.internal)
 	}()
 	cmdutil.ExitIfError(err)
 
@@ -120,13 +133,18 @@ func add(cmd *cobra.Command, args []string) {
 type addParams struct {
 	issueKey string
 	body     string
+	mention  []string
 	template string
 	noInput  bool
+	internal bool
 	debug    bool
 }
 
 func parseArgsAndFlags(args []string, flags query.FlagParser) *addParams {
-	var issueKey, body string
+	var (
+		issueKey, body string
+		mention        []string
+	)
 
 	nargs := len(args)
 	if nargs >= 1 {
@@ -135,6 +153,9 @@ func parseArgsAndFlags(args []string, flags query.FlagParser) *addParams {
 	if nargs >= 2 {
 		body = args[1]
 	}
+
+	mention, err := flags.GetStringSlice("mention")
+	cmdutil.ExitIfError(err)
 
 	debug, err := flags.GetBool("debug")
 	cmdutil.ExitIfError(err)
@@ -145,11 +166,16 @@ func parseArgsAndFlags(args []string, flags query.FlagParser) *addParams {
 	noInput, err := flags.GetBool("no-input")
 	cmdutil.ExitIfError(err)
 
+	internal, err := flags.GetBool("internal")
+	cmdutil.ExitIfError(err)
+
 	return &addParams{
 		issueKey: issueKey,
 		body:     body,
+		mention:  mention,
 		template: template,
 		noInput:  noInput,
+		internal: internal,
 		debug:    debug,
 	}
 }
@@ -186,13 +212,13 @@ func (ac *addCmd) getQuestions() []*survey.Question {
 		defaultBody string
 	)
 
-	if ac.params.template != "" || cmdutil.StdinHasData() {
-		b, err := cmdutil.ReadFile(ac.params.template)
-		if err != nil {
-			cmdutil.Failed("Error: %s", err)
-		}
-		defaultBody = string(b)
-	}
+	//if ac.params.template != "" || cmdutil.StdinHasData() {
+	//	b, err := cmdutil.ReadFile(ac.params.template)
+	//	if err != nil {
+	//		cmdutil.Failed("Error: %s", err)
+	//	}
+	//	defaultBody = string(b)
+	//}
 
 	if ac.params.noInput && ac.params.body == "" {
 		ac.params.body = defaultBody

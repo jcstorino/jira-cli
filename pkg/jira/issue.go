@@ -10,9 +10,9 @@ import (
 
 	"github.com/ankitpokhrel/jira-cli/pkg/jira/filter/issue"
 
-	"github.com/ankitpokhrel/jira-cli/pkg/adf"
-	"github.com/ankitpokhrel/jira-cli/pkg/jira/filter"
-	"github.com/ankitpokhrel/jira-cli/pkg/md"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/adf"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira/filter"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/md"
 )
 
 const (
@@ -296,22 +296,35 @@ func (c *Client) GetLinkID(inwardIssue, outwardIssue string) (string, error) {
 	return "", fmt.Errorf("no link found between provided issues")
 }
 
+type issueCommentPropertyValue struct {
+	Internal bool `json:"internal"`
+}
+
+type issueCommentProperty struct {
+	Key   string                    `json:"key"`
+	Value issueCommentPropertyValue `json:"value"`
+}
 type issueCommentRequest struct {
-	Body string `json:"body"`
+	Body       string                 `json:"body"`
+	Properties []issueCommentProperty `json:"properties"`
 }
 
 // AddIssueComment adds comment to an issue using POST /issue/{key}/comment endpoint.
-func (c *Client) AddIssueComment(key, comment string) error {
-	body, err := json.Marshal(&issueCommentRequest{Body: md.ToJiraMD(comment)})
+func (c *Client) AddIssueComment(key, comment string, internal bool) error {
+	body, err := json.Marshal(&issueCommentRequest{Body: md.ToJiraMD(comment), Properties: []issueCommentProperty{{Key: "sd.public.comment", Value: issueCommentPropertyValue{Internal: internal}}}})
 	if err != nil {
 		return err
 	}
 
 	path := fmt.Sprintf("/issue/%s/comment", key)
-	res, err := c.PostV2(context.Background(), path, body, Header{
+	res, err := c.Post(context.Background(), path, body, Header{
 		"Accept":       "application/json",
 		"Content-Type": "application/json",
 	})
+	//res, err := c.PostV2(context.Background(), path, body, Header{
+	//	"Accept":       "application/json",
+	//	"Content-Type": "application/json",
+	//})
 	if err != nil {
 		return err
 	}

@@ -8,11 +8,16 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira/filter/issue"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/tui"
 	"github.com/ankitpokhrel/jira-cli/api"
 	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
 	"github.com/ankitpokhrel/jira-cli/pkg/jira"
 	"github.com/ankitpokhrel/jira-cli/pkg/jira/filter/issue"
 	"github.com/ankitpokhrel/jira-cli/pkg/tui"
+	"github.com/rivo/tview"
 )
 
 // SprintIssueFunc provides issues in the sprint.
@@ -117,13 +122,13 @@ func (sl *SprintList) data() []tui.PreviewData {
 
 		data = append(data, tui.PreviewData{
 			Key: fmt.Sprintf("%d-%d-%s", bid, sid, s.StartDate),
-			Menu: fmt.Sprintf(
-				"➤ #%d %s: ⦗%s - %s⦘",
+			Menu: tview.Escape(fmt.Sprintf(
+				"➤ #%d %s: [%s - %s]",
 				s.ID,
 				prepareTitle(s.Name),
 				cmdutil.FormatDateTimeHuman(s.StartDate, time.RFC3339),
 				cmdutil.FormatDateTimeHuman(s.EndDate, time.RFC3339),
-			),
+			)),
 			Contents: func(key string) interface{} {
 				issues := sl.Issues(bid, sid)
 				return sl.tabularize(issues)

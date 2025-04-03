@@ -5,6 +5,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdcommon"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/el/jira-cli/internal/query"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/surveyext"
 	"github.com/ankitpokhrel/jira-cli/api"
 	"github.com/ankitpokhrel/jira-cli/internal/cmdcommon"
 	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
@@ -25,7 +30,7 @@ $ jira epic create -n"Epic epic" -s"Everything" -yHigh -lbug -lurgent -b"Bug des
 $ jira epic create -pPRJ -n"Amazing epic" -yHigh -s"New Bug" -b$'Bug description\n\nSome more text'
 
 # Create epic and set custom fields
-# See https://github.com/ankitpokhrel/jira-cli/discussions/346
+# See https://github.com/ankitpokhrel/el/jira-cli/discussions/346
 $ jira epic create -n"Epic with custom fields" --custom story-points=3`
 )
 
@@ -158,13 +163,13 @@ func (cc *createCmd) getQuestions(projectType string) []*survey.Question {
 
 	var defaultBody string
 
-	if cc.params.Template != "" || cmdutil.StdinHasData() {
-		b, err := cmdutil.ReadFile(cc.params.Template)
-		if err != nil {
-			cmdutil.Failed("Error: %s", err)
-		}
-		defaultBody = string(b)
-	}
+	//if cc.params.Template != "" || cmdutil.StdinHasData() {
+	//	b, err := cmdutil.ReadFile(cc.params.Template)
+	//	if err != nil {
+	//		cmdutil.Failed("Error: %s", err)
+	//	}
+	//	defaultBody = string(b)
+	//}
 
 	if cc.params.NoInput {
 		if cc.params.Body == "" {

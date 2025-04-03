@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
 	"github.com/ankitpokhrel/jira-cli/api"
-	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
-	"github.com/ankitpokhrel/jira-cli/pkg/jira"
 )
 
 const (
@@ -61,6 +61,7 @@ And, this field is mandatory when creating a sub-task.`)
 	cmd.Flags().StringP("reporter", "r", "", prefix+" reporter (username, email or display name)")
 	cmd.Flags().StringP("assignee", "a", "", prefix+" assignee (username, email or display name)")
 	cmd.Flags().StringArrayP("label", "l", []string{}, prefix+" labels")
+	cmd.Flags().StringP("estimate", "e", "", prefix+" estimate in hours")
 	cmd.Flags().StringArrayP("component", "C", []string{}, prefix+" components")
 	cmd.Flags().StringArray("fix-version", []string{}, "Release info (fixVersions)")
 	cmd.Flags().StringArray("affects-version", []string{}, "Release info (affectsVersions)")
@@ -263,7 +264,7 @@ func ValidateCustomFields(fields map[string]string, configuredFields []jira.Issu
 		cmdutil.Warn(`
 Some custom fields are not configured and will be ignored. This will fail with error in the future release.
 Please make sure that the passed custom fields are valid and configured accordingly in the config file.
-Invalid custom fields used in the command: %s`,
+Invalid custom fields used in the command : %s`,
 			strings.Join(invalidCustomFields, ", "),
 		)
 	}

@@ -14,9 +14,9 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/term"
 
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/tui"
 	"github.com/ankitpokhrel/jira-cli/pkg/browser"
-	"github.com/ankitpokhrel/jira-cli/pkg/jira"
-	"github.com/ankitpokhrel/jira-cli/pkg/tui"
 )
 
 // ExitIfError exists with error message if err is not nil.
@@ -71,17 +71,17 @@ func Info(msg string) *spinner.Spinner {
 
 // Success prints success message in stdout.
 func Success(msg string, args ...interface{}) {
-	fmt.Fprintf(os.Stdout, fmt.Sprintf("\n\u001B[0;32m✓\u001B[0m %s\n", msg), args...)
+	_, _ = fmt.Fprintf(os.Stdout, fmt.Sprintf("\n\u001B[0;32m✓\u001B[0m %s\n", msg), args...)
 }
 
 // Warn prints warning message in stderr.
 func Warn(msg string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("\u001B[0;33m%s\u001B[0m\n", msg), args...)
+	_, _ = fmt.Fprintf(os.Stderr, fmt.Sprintf("\u001B[0;33m%s\u001B[0m\n", msg), args...)
 }
 
 // Fail prints failure message in stderr.
 func Fail(msg string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("\u001B[0;31m✗\u001B[0m %s\n", msg), args...)
+	_, _ = fmt.Fprintf(os.Stderr, fmt.Sprintf("\u001B[0;31m✗\u001B[0m %s\n", msg), args...)
 }
 
 // Failed prints failure message in stderr and exits.
@@ -163,6 +163,20 @@ func NormalizeJiraError(msg string) string {
 	msg = strings.Replace(msg, "- ", "", 1)
 
 	return msg
+}
+
+// Get Issue Type Key to send together IssueType
+// Fixes the problem of having 2 Issue Tasks with the same name in Jira
+func GetIssueTypeKey(issueType string, issueTypes []*jira.IssueType) string {
+	var issue_id string
+	for _, it := range issueTypes {
+		// Exact matches return immediately.
+		if strings.EqualFold(issueType, it.Name) {
+			issue_id = it.ID
+			break
+		}
+	}
+	return issue_id
 }
 
 // GetSubtaskHandle fetches actual subtask handle.

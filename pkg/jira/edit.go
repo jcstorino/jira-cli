@@ -31,8 +31,7 @@ type EditRequest struct {
 	AffectsVersions  []string
 	// CustomFields holds all custom fields passed
 	// while editing the issue.
-	CustomFields map[string]string
-
+	CustomFields           map[string]string
 	configuredCustomFields []IssueTypeField
 }
 
@@ -193,7 +192,7 @@ func getRequestDataForEdit(req *EditRequest) *editRequest {
 			} `json:"edit,omitempty"`
 		}{{Edit: struct {
 			OriginalEstimate string `json:"originalEstimate,omitempty"`
-		}{OriginalEstimate: req.OriginalEstimate}}},
+		}{OriginalEstimate: req.Estimate}}},
 	}}
 
 	if len(req.Labels) > 0 {

@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/ankitpokhrel/el/jira-cli/pkg/tui"
 	"github.com/ankitpokhrel/jira-cli/pkg/jira"
-	"github.com/ankitpokhrel/jira-cli/pkg/tui"
 )
 
 func TestSprintPreviewLayoutData(t *testing.T) {
@@ -98,7 +98,7 @@ func TestSprintPreviewLayoutData(t *testing.T) {
 		},
 		{
 			Key:  "1-1-2020-12-07T16:12:00.000Z",
-			Menu: "➤ #1 Sprint 1: ⦗Mon, 07 Dec 20 - Sun, 13 Dec 20⦘",
+			Menu: "➤ #1 Sprint 1: [Mon, 07 Dec 20 - Sun, 13 Dec 20[]",
 			Contents: tui.TableData{
 				[]string{
 					"TYPE", "KEY", "SUMMARY", "STATUS", "ASSIGNEE", "REPORTER", "PRIORITY", "RESOLUTION",
@@ -112,7 +112,7 @@ func TestSprintPreviewLayoutData(t *testing.T) {
 		},
 		{
 			Key:  "1-2-2020-12-13T16:12:00.000Z",
-			Menu: "➤ #2 Sprint 2: ⦗Sun, 13 Dec 20 - Sat, 19 Dec 20⦘",
+			Menu: "➤ #2 Sprint 2: [Sun, 13 Dec 20 - Sat, 19 Dec 20[]",
 			Contents: tui.TableData{
 				[]string{
 					"TYPE", "KEY", "SUMMARY", "STATUS", "ASSIGNEE", "REPORTER", "PRIORITY", "RESOLUTION",
@@ -141,6 +141,7 @@ func TestSprintPreviewLayoutData(t *testing.T) {
 		case tui.TableData:
 			assert.Equal(t, expected[i].Contents.(tui.TableData), d.Contents(d.Key))
 		}
+
 	}
 }
 

@@ -3,6 +3,7 @@ package sprint
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmd/sprint/list"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/sprint/add"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/sprint/close"
 	"github.com/ankitpokhrel/jira-cli/internal/cmd/sprint/list"

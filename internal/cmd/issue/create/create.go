@@ -1,12 +1,18 @@
 package create
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdcommon"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/el/jira-cli/internal/query"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/surveyext"
 	"github.com/ankitpokhrel/jira-cli/api"
 	"github.com/ankitpokhrel/jira-cli/internal/cmdcommon"
 	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
@@ -27,7 +33,7 @@ $ jira issue create -tBug -s"New Bug" -yHigh -lbug -lurgent -b"Bug description"
 $ jira issue create -pPRJ -tBug -yHigh -s"New Bug" -b$'Bug description\n\nSome more text'
 
 # Create issue and set custom fields
-# See https://github.com/ankitpokhrel/jira-cli/discussions/346
+# See https://github.com/ankitpokhrel/el/jira-cli/discussions/346
 $ jira issue create -tStory -s"Issue with custom fields" --custom story-points=3
 
 # Load description from template file
@@ -36,23 +42,32 @@ $ jira issue create --template /path/to/template.tmpl
 # Get description from standard input
 $ jira issue create --template -
 
+# Create issue in the configured project with JSON output
+$ jira issue create --raw
+
 # Or, use pipe to read input directly from standard input
 $ echo "Description from stdin" | jira issue create -s"Summary" -tTask
 
 # For issue description, the flag --body/-b takes precedence over the --template flag
 # The example below will add "Body from flag" as an issue description
 $ jira issue create -tTask -sSummary -b"Body from flag" --template /path/to/template.tpl`
+
+	flagRaw = "raw"
 )
 
 // NewCmdCreate is a create command.
 func NewCmdCreate() *cobra.Command {
-	return &cobra.Command{
+	cmd := cobra.Command{
 		Use:     "create",
 		Short:   "Create an issue in a project",
 		Long:    helpText,
 		Example: examples,
 		Run:     create,
 	}
+
+	cmd.Flags().Bool(flagRaw, false, "Print output in JSON format")
+
+	return &cmd
 }
 
 // SetFlags sets flags supported by create command.
@@ -84,7 +99,7 @@ func create(cmd *cobra.Command, _ []string) {
 	}
 
 	cmdutil.ExitIfError(cc.setIssueTypes())
-	cmdutil.ExitIfError(cc.askQuestions())
+	//cmdutil.ExitIfError(cc.askQuestions())
 
 	if !params.NoInput {
 		err := cmdcommon.HandleNoInput(params)
@@ -94,7 +109,7 @@ func create(cmd *cobra.Command, _ []string) {
 	params.Reporter = cmdcommon.GetRelevantUser(client, project, params.Reporter)
 	params.Assignee = cmdcommon.GetRelevantUser(client, project, params.Assignee)
 
-	key, err := func() (string, error) {
+	issue, err := func() (*jira.CreateResponse, error) {
 		s := cmdutil.Info("Creating an issue...")
 		defer s.Stop()
 
@@ -126,18 +141,24 @@ func create(cmd *cobra.Command, _ []string) {
 			cr.SubtaskField = handle
 		}
 
-		resp, err := client.CreateV2(&cr)
-		if err != nil {
-			return "", err
-		}
-		return resp.Key, nil
+		return client.CreateV2(&cr)
 	}()
 
 	cmdutil.ExitIfError(err)
-	cmdutil.Success("Issue created\n%s", cmdutil.GenerateServerBrowseURL(server, key))
+
+	jsonFlag, err := cmd.Flags().GetBool(flagRaw)
+	cmdutil.ExitIfError(err)
+	if jsonFlag {
+		jsonData, err := json.Marshal(issue)
+		cmdutil.ExitIfError(err)
+		fmt.Println(string(jsonData))
+		return
+	}
+
+	cmdutil.Success("Issue created\n%s", cmdutil.GenerateServerBrowseURL(server, issue.Key))
 
 	if web, _ := cmd.Flags().GetBool("web"); web {
-		err := cmdutil.Navigate(server, key)
+		err := cmdutil.Navigate(server, issue.Key)
 		cmdutil.ExitIfError(err)
 	}
 }
@@ -273,13 +294,13 @@ func (cc *createCmd) getRemainingQuestions() []*survey.Question {
 
 	var defaultBody string
 
-	if cc.params.Template != "" || cmdutil.StdinHasData() {
-		b, err := cmdutil.ReadFile(cc.params.Template)
-		if err != nil {
-			cmdutil.Failed("Error: %s", err)
-		}
-		defaultBody = string(b)
-	}
+	//if cc.params.Template != "" || cmdutil.StdinHasData() {
+	//	b, err := cmdutil.ReadFile(cc.params.Template)
+	//	if err != nil {
+	//		cmdutil.Failed("Error: %s", err)
+	//	}
+	//	defaultBody = string(b)
+	//}
 
 	if cc.params.NoInput {
 		if cc.params.Body == "" {
@@ -337,6 +358,9 @@ func parseFlags(flags query.FlagParser) *cmdcommon.CreateParams {
 	cmdutil.ExitIfError(err)
 
 	labels, err := flags.GetStringArray("label")
+	cmdutil.ExitIfError(err)
+
+	estimate, err := flags.GetString("estimate")
 	cmdutil.ExitIfError(err)
 
 	components, err := flags.GetStringArray("component")

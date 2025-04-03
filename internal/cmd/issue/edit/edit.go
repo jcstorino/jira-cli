@@ -8,14 +8,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdcommon"
+	"github.com/ankitpokhrel/el/jira-cli/internal/cmdutil"
+	"github.com/ankitpokhrel/el/jira-cli/internal/query"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/adf"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/jira"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/md"
+	"github.com/ankitpokhrel/el/jira-cli/pkg/surveyext"
 	"github.com/ankitpokhrel/jira-cli/api"
-	"github.com/ankitpokhrel/jira-cli/internal/cmdcommon"
-	"github.com/ankitpokhrel/jira-cli/internal/cmdutil"
-	"github.com/ankitpokhrel/jira-cli/internal/query"
-	"github.com/ankitpokhrel/jira-cli/pkg/adf"
-	"github.com/ankitpokhrel/jira-cli/pkg/jira"
-	"github.com/ankitpokhrel/jira-cli/pkg/md"
-	"github.com/ankitpokhrel/jira-cli/pkg/surveyext"
 )
 
 const (
@@ -100,13 +100,14 @@ func edit(cmd *cobra.Command, args []string) {
 	}
 
 	// Use stdin only if nothing is passed to --body
-	if params.body == "" && cmdutil.StdinHasData() {
-		b, err := cmdutil.ReadFile("-")
-		if err != nil {
-			cmdutil.Failed("Error: %s", err)
-		}
-		params.body = string(b)
-	}
+	//if params.body == "" && cmdutil.StdinHasData() {
+	//	b, err := cmdutil.ReadFile("-")
+	//	if err != nil {
+	//		cmdutil.Failed("Error: %s", err)
+	//	}
+	//	params.body = string(b)
+	//}
+
 	// Keep body as is if there were no changes.
 	if params.body != "" && params.body == originalBody {
 		params.body = ""
@@ -114,6 +115,8 @@ func edit(cmd *cobra.Command, args []string) {
 
 	labels := params.labels
 	labels = append(labels, issue.Fields.Labels...)
+
+	estimate := params.estimate
 
 	components := make([]string, 0, len(issue.Fields.Components)+len(params.components))
 	for _, c := range issue.Fields.Components {
@@ -340,7 +343,7 @@ func parseArgsAndFlags(flags query.FlagParser, args []string, project string) *e
 	labels, err := flags.GetStringArray("label")
 	cmdutil.ExitIfError(err)
 
-	originalEstimate, err := flags.GetString("original-estimate")
+	estimate, err := flags.GetString("estimate")
 	cmdutil.ExitIfError(err)
 
 	components, err := flags.GetStringArray("component")
@@ -416,13 +419,13 @@ func getMetadataQuestions(meta []string, issue *jira.Issue) []*survey.Question {
 					Default: strings.Join(issue.Fields.Labels, ","),
 				},
 			})
-		case "OriginalEstimate":
+		case "Estimate":
 			qs = append(qs, &survey.Question{
-				Name: "originalestimate",
+				Name: "estimate",
 				Prompt: &survey.Input{
 					Message: "Estimate",
 					Help:    "Estimate in hours",
-					Default: issue.Fields.OriginalEstimate,
+					Default: issue.Fields.Estimate.Timetracking.OriginalEstimate,
 				},
 			})
 		case "FixVersions":
@@ -460,7 +463,7 @@ func setFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP("priority", "y", "", "Edit priority")
 	cmd.Flags().StringP("assignee", "a", "", "Edit assignee (email or display name)")
 	cmd.Flags().StringArrayP("label", "l", []string{}, "Append labels")
-	cmd.Flags().StringP("original-estimate", "e", "", "Original Estimate in hours")
+	cmd.Flags().StringP("estimate", "e", "", "Estimate in hours")
 	cmd.Flags().StringArrayP("component", "C", []string{}, "Replace components")
 	cmd.Flags().StringArray("fix-version", []string{}, "Add/Append release info (fixVersions)")
 	cmd.Flags().StringArray("affects-version", []string{}, "Add/Append release info (affectsVersions)")
